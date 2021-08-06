@@ -17,7 +17,7 @@ import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.services.CardService;
 
 @RestController
-@RequestMapping("/cards")
+@RequestMapping("/cards/")
 public class CardController {
 	
 	private CardService cardService;
@@ -28,33 +28,39 @@ public class CardController {
 	}
 	
 	@PostMapping()
+	@PreAuthorize("permitAll()")
 	//@PreAuthorize("hasAuthority('admin')")
-	public void createUser(@RequestBody CardEntity card) {
+	public void createCard(@RequestBody CardEntity card) {
 		cardService.save(card);
 	}
 	
 	@GetMapping()
+	@PreAuthorize("permitAll()")
 	//@PreAuthorize("hasAuthority('admin')")
-	public List<CardEntity> displayAllUsers(){
+	public List<CardEntity> displayAllCards(){
+		System.out.println("displayCards");
 		return cardService.getAll();
 	}
 	
 	@GetMapping("/{id}")
+	@PreAuthorize("permitAll()")
 	//@PreAuthorize("hasAuthority('admin') or principal == #id")
-	public CardEntity displayUserById(@PathVariable String id) {
+	public CardEntity displayCardById(@PathVariable String id) {
 		return cardService.getById(id);
 	}
 
 	@PutMapping("/{id}")
+	@PreAuthorize("permitAll()")
 	//@PreAuthorize("hasAuthority('admin')")
-	public void updateUser(@RequestBody CardEntity card, @PathVariable String id) {
+	public void updateCard(@RequestBody CardEntity card, @PathVariable String id) {
 		
 		cardService.save(card);
 	}
 	
 	@DeleteMapping("/{id}")
+	@PreAuthorize("permitAll()")
 	//@PreAuthorize("hasAuthority('admin')")
-	public void deleteUser(@PathVariable String id){
+	public void deleteCard(@PathVariable String id){
 		cardService.deleteById(id);
 	}
   

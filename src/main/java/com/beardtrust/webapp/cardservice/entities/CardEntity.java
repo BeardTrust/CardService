@@ -2,11 +2,10 @@ package com.beardtrust.webapp.cardservice.entities;
 
 import java.io.Serializable;
 
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -16,7 +15,7 @@ public class CardEntity implements Serializable{
 	@Id
 	@Column(unique=true)
 	private String cardId;
-	@OneToMany
+	//@OneToMany
 	private String userId;
 	private String cardType;
 	private Float balance;

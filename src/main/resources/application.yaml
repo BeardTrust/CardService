@@ -13,7 +13,7 @@ gateway:
   ip: ${GATEWAY:localhost}
 spring:
   application:
-    name: ${NAME:user-service}
+    name: ${NAME:card-service}
   h2:
     console:
       enabled: true
