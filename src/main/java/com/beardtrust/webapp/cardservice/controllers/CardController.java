@@ -2,7 +2,13 @@ package com.beardtrust.webapp.cardservice.controllers;
 
 import java.util.List;
 
+import com.beardtrust.webapp.cardservice.dtos.CardDTO;
+import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
+import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.services.CardService;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.Produces;
 
 @RestController
 @RequestMapping("/cards")
@@ -57,5 +66,26 @@ public class CardController {
 	public void deleteUser(@PathVariable String id){
 		cardService.deleteById(id);
 	}
-  
+
+
+	/**
+	 * This method receives a CardDTO object and invokes the card service to sign the specified user
+	 * up for the specified card.
+	 *
+	 * @param userId String the user's unique id
+	 * @param card CardDTO the dto for the card being applied for
+	 * @return ResponseEntity<CardDTO> the response from the server including the new card's dto
+	 */
+	@PreAuthorize("permitAll()")
+	@PostMapping(path = "/{id}")
+	@Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	public ResponseEntity<CardSignUpResponseModel> applyForCard(@PathVariable("id") String userId,
+																@RequestBody CardSignUpRequestModel signUpRequest){
+		ResponseEntity<CardSignUpResponseModel> response = null;
+		System.out.println(userId);
+		System.out.println("Signup Request: " + signUpRequest);
+		response = new ResponseEntity<>(cardService.applyForCard(userId, signUpRequest), HttpStatus.CREATED);
+		return response;
+	}
 }
