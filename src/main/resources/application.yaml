@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:7778}
+  port: ${PORT:7779}
   servlet:
     context-path: /api
 management:
@@ -13,7 +13,7 @@ gateway:
   ip: ${GATEWAY:localhost}
 spring:
   application:
-    name: ${NAME:user-service}
+    name: ${NAME:cards-service}
   h2:
     console:
       enabled: true
