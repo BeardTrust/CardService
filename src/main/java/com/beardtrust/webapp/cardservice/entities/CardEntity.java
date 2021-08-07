@@ -1,13 +1,9 @@
 package com.beardtrust.webapp.cardservice.entities;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "cards")
@@ -16,18 +12,18 @@ public class CardEntity implements Serializable{
 	@Id
 	@Column(unique=true)
 	private String cardId;
-	@OneToMany
 	private String userId;
-	private String cardType;
-	private Float balance;
+	@ManyToOne
+	private CardTypeEntity cardType;
+	private Double balance;
 	@Column(unique=true)
 	private String cardNumber;
-	private Float interestRate;
-	private String createDate;
+	private Double interestRate;
+	private LocalDate createDate;
 	private String nickname;
 	private Integer billCycleLength;
 	private Boolean activeStatus;
-	private String expireDate;
+	private LocalDate expireDate;
 	
 	public String getCardId() {
 		return cardId;
@@ -41,16 +37,16 @@ public class CardEntity implements Serializable{
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-	public String getCardType() {
+	public CardTypeEntity getCardType() {
 		return cardType;
 	}
-	public void setCardType(String cardType) {
+	public void setCardType(CardTypeEntity cardType) {
 		this.cardType = cardType;
 	}
-	public Float getBalance() {
+	public Double getBalance() {
 		return balance;
 	}
-	public void setBalance(Float balance) {
+	public void setBalance(Double balance) {
 		this.balance = balance;
 	}
 	public String getCardNumber() {
@@ -59,16 +55,16 @@ public class CardEntity implements Serializable{
 	public void setCardNumber(String cardNumber) {
 		this.cardNumber = cardNumber;
 	}
-	public Float getInterestRate() {
+	public Double getInterestRate() {
 		return interestRate;
 	}
-	public void setInterestRate(Float interestRate) {
+	public void setInterestRate(Double interestRate) {
 		this.interestRate = interestRate;
 	}
-	public String getCreateDate() {
+	public LocalDate getCreateDate() {
 		return createDate;
 	}
-	public void setCreateDate(String createDate) {
+	public void setCreateDate(LocalDate createDate) {
 		this.createDate = createDate;
 	}
 	public String getNickname() {
@@ -89,10 +85,10 @@ public class CardEntity implements Serializable{
 	public void setActiveStatus(Boolean activeStatus) {
 		this.activeStatus = activeStatus;
 	}
-	public String getExpireDate() {
+	public LocalDate getExpireDate() {
 		return expireDate;
 	}
-	public void setExpireDate(String expireDate) {
+	public void setExpireDate(LocalDate expireDate) {
 		this.expireDate = expireDate;
 	}
 	@Override

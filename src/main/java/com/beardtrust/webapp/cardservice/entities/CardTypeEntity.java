@@ -2,13 +2,15 @@ package com.beardtrust.webapp.cardservice.entities;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
-public class CardTypeEntity extends CardEntity {
+@Table(name="card_types")
+public class CardTypeEntity {
 	@Id
 	private String id;
 	private String typeName;
-	private Double interestRate;
+	private Double baseInterestRate;
 
 	public String getId() {
 		return id;
@@ -26,12 +28,11 @@ public class CardTypeEntity extends CardEntity {
 		this.typeName = typeName;
 	}
 
-	@Override
-	public Double getInterestRate() {
-		return interestRate;
+	public Double getBaseInterestRate() {
+		return baseInterestRate;
 	}
 
-	public void setInterestRate(Double interestRate) {
-		this.interestRate = interestRate;
+	public void setBaseInterestRate(Double baseInterestRate) {
+		this.baseInterestRate = baseInterestRate;
 	}
 }

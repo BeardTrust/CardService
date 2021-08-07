@@ -1,10 +1,6 @@
 package com.beardtrust.webapp.cardservice.dtos;
 
 import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.OneToMany;
-
 import lombok.Data;
 
 @Data
