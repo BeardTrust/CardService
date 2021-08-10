@@ -5,6 +5,7 @@ import java.util.List;
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +28,7 @@ import javax.ws.rs.Produces;
 
 @RestController
 @RequestMapping("/cards")
+@Slf4j
 public class CardController {
 	
 	private CardService cardService;
@@ -73,7 +75,7 @@ public class CardController {
 	 * up for the specified card.
 	 *
 	 * @param userId String the user's unique id
-	 * @param card CardDTO the dto for the card being applied for
+	 * @param signUpRequest CardSignUpRequestModel object containing application data
 	 * @return ResponseEntity<CardDTO> the response from the server including the new card's dto
 	 */
 	@PreAuthorize("permitAll()")
@@ -83,9 +85,20 @@ public class CardController {
 	public ResponseEntity<CardSignUpResponseModel> applyForCard(@PathVariable("id") String userId,
 																@RequestBody CardSignUpRequestModel signUpRequest){
 		ResponseEntity<CardSignUpResponseModel> response = null;
-		System.out.println(userId);
-		System.out.println("Signup Request: " + signUpRequest);
+		log.info("New card application for " + userId);
 		response = new ResponseEntity<>(cardService.applyForCard(userId, signUpRequest), HttpStatus.CREATED);
+		return response;
+	}
+
+	@PreAuthorize("permitAll()")
+	@GetMapping(path = "/{id}/{cardId}")
+	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	public ResponseEntity<CardDTO> getCardStatus(@PathVariable("id") String userId, @PathVariable("cardId") String
+												 cardId){
+		ResponseEntity<CardDTO> response = null;
+		log.info("Card status report for " + cardId);
+		CardDTO status = cardService.getStatus(userId, cardId);
+		response = new ResponseEntity<>(status, HttpStatus.OK);
 		return response;
 	}
 }

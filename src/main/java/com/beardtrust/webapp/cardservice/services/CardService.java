@@ -18,4 +18,6 @@ public interface CardService {
 	public void save(CardEntity card);
 
 	CardSignUpResponseModel applyForCard(String userId, CardSignUpRequestModel signUpRequest);
+
+	CardDTO getStatus(String userId, String cardId);
 }

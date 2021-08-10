@@ -7,6 +7,7 @@ import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
 import com.beardtrust.webapp.cardservice.repos.CardRepository;
 import com.beardtrust.webapp.cardservice.repos.CardTypeRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Service
+@Slf4j
 public class CardServiceImpl implements CardService {
 
 	private final CardRepository cardRepo;
@@ -73,6 +75,15 @@ public class CardServiceImpl implements CardService {
 		cardRepo.save(card);
 	}
 
+	/**
+	 * This method receives an application for a credit card, processes that application, and
+	 * returns a CardSignUpResponseModel object containing relevant information from the
+	 * application process.
+	 *
+	 * @param userId String the user ID of the applying user
+	 * @param signUpRequest SignUpRequestModel the application for the credit card
+	 * @return CardSignUpResponseModel the response object created during the application process
+	 */
 	@Override
 	@Transactional
 	public CardSignUpResponseModel applyForCard(String userId, CardSignUpRequestModel signUpRequest){
@@ -92,7 +103,9 @@ public class CardServiceImpl implements CardService {
 			card.setExpireDate(card.getCreateDate().plusYears(3));
 			card.setNickname(signUpRequest.getNickname());
 			card = cardRepo.save(card);
+			log.info("New card added to database " + card.getCardNumber());
 		} else {
+			log.error("Card type " + signUpRequest.getCardType() + " is not a valid card type");
 			card = new CardEntity();
 		}
 
@@ -101,19 +114,53 @@ public class CardServiceImpl implements CardService {
 		return response;
 	}
 
+	/**
+	 * This method retrieves card information and returns a card DTO to send
+	 * card status information to an authorized party.
+	 *
+	 * @param userId String the user ID of the card owner
+	 * @param cardId String the card ID of the desired card
+	 * @return CardDTO the data transfer object containing required card information
+	 */
+	@Override
+	@Transactional
+	public CardDTO getStatus(String userId, String cardId) {
+		log.info("Card status request for " + userId);
+
+		CardDTO status = null;
+		Optional<CardEntity> card = cardRepo.findById(cardId);
+		if(card.isPresent()){
+			if(card.get().getUserId().equals(userId)){
+				ModelMapper modelMapper = new ModelMapper();
+				modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+				status = modelMapper.map(card.get(), CardDTO.class);
+			}
+		}
+		return status;
+	}
+
+	/**
+	 * This method generates a credit card number for a new credit card, looks for duplication in
+	 * the database, and returns a unique card number using the specified major industry identifier
+	 * and issuer identification number.
+	 *
+	 * @return String the string representation of the new credit card number
+	 */
 	private String generateCardNumber(){
 		String majorIndustryIdentifier = "9";
 		String issuerIdentificationNumber = "911-42";
 		StringBuilder stringBuilder = new StringBuilder();
 		Random random = new Random();
 		for(int i = 0; i < 10; i++){
-			if(i == 2 || i == 7 || i == 12){
+			if(i == 2 || i == 6){
 				stringBuilder.append("-");
 			}
 			int number = random.nextInt(10);
 			stringBuilder.append(number);
 		}
 
-		return majorIndustryIdentifier + issuerIdentificationNumber + stringBuilder;
+		String cardNumber = majorIndustryIdentifier + issuerIdentificationNumber + stringBuilder;
+
+		return cardRepo.findById(cardNumber).isPresent() ? generateCardNumber() : cardNumber;
 	}
 }
