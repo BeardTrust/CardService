@@ -4,6 +4,11 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/**
+ * This class represents the card types as found in the database.
+ *
+ * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
+ */
 @Entity
 @Table(name="card_types")
 public class CardTypeEntity {

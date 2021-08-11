@@ -5,6 +5,12 @@ import java.time.LocalDate;
 
 import javax.persistence.*;
 
+/**
+ * This class represents the card entities as found in the database.
+ *
+ * @author Davis Hill <Davis.Hill@Smoothstack.com>
+ * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
+ */
 @Entity
 @Table(name = "cards")
 public class CardEntity implements Serializable{

@@ -3,6 +3,12 @@ package com.beardtrust.webapp.cardservice.dtos;
 import java.io.Serializable;
 import lombok.Data;
 
+/**
+ * This class provides an object for the transfer of card data
+ * outside of the cards service.
+ *
+ * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
+ */
 @Data
 public class CardDTO implements Serializable{
 	

@@ -17,6 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * This class provides the implementation of the CardService interface.
+ *
+ * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
+ * @author Davis Hill <Davis.Hill@Smoothstack.com>
+ */
 @Service
 @Slf4j
 public class CardServiceImpl implements CardService {
@@ -75,24 +81,15 @@ public class CardServiceImpl implements CardService {
 		cardRepo.save(card);
 	}
 
-	/**
-	 * This method receives an application for a credit card, processes that application, and
-	 * returns a CardSignUpResponseModel object containing relevant information from the
-	 * application process.
-	 *
-	 * @param userId String the user ID of the applying user
-	 * @param signUpRequest SignUpRequestModel the application for the credit card
-	 * @return CardSignUpResponseModel the response object created during the application process
-	 */
 	@Override
 	@Transactional
-	public CardSignUpResponseModel applyForCard(String userId, CardSignUpRequestModel signUpRequest){
+	public CardSignUpResponseModel applyForCard(String userId, CardSignUpRequestModel signUpRequest) {
 		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(signUpRequest.getCardType());
 		CardEntity card = new CardEntity();
 
 		// Todo: Implement update user details logic
 
-		if(cardType.isPresent()){
+		if (cardType.isPresent()) {
 			card.setBalance(0.00);
 			card.setCardType(cardType.get());
 			card.setInterestRate(cardType.get().getBaseInterestRate());
@@ -103,7 +100,7 @@ public class CardServiceImpl implements CardService {
 			card.setBillCycleLength(30);
 			card.setCreateDate(LocalDate.now());
 			card.setExpireDate(card.getCreateDate().plusYears(3));
-			if(signUpRequest.getNickname().length() > 0){
+			if (signUpRequest.getNickname().length() > 0) {
 				card.setNickname(signUpRequest.getNickname());
 			} else {
 				card.setNickname(cardType.get().toString().toUpperCase() + "_CARD");
@@ -121,14 +118,6 @@ public class CardServiceImpl implements CardService {
 		return response;
 	}
 
-	/**
-	 * This method retrieves card information and returns a card DTO to send
-	 * card status information to an authorized party.
-	 *
-	 * @param userId String the user ID of the card owner
-	 * @param cardId String the card ID of the desired card
-	 * @return CardDTO the data transfer object containing required card information
-	 */
 	@Override
 	@Transactional
 	public CardDTO getStatus(String userId, String cardId) {
@@ -136,8 +125,8 @@ public class CardServiceImpl implements CardService {
 
 		CardDTO status = null;
 		Optional<CardEntity> card = cardRepo.findById(cardId);
-		if(card.isPresent()){
-			if(card.get().getUserId().equals(userId)){
+		if (card.isPresent()) {
+			if (card.get().getUserId().equals(userId)) {
 				ModelMapper modelMapper = new ModelMapper();
 				modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 				status = modelMapper.map(card.get(), CardDTO.class);
@@ -146,15 +135,6 @@ public class CardServiceImpl implements CardService {
 		return status;
 	}
 
-	/**
-	 * This method receives a user's id as a string parameter and uses it to retrieve
-	 * a list of card entities associated with that user id, then creates a list of
-	 * card data transfer objects from the list of card entities and returns the list
-	 * of card data transfer objects.
-	 *
-	 * @param userId String the userId of the user whose cards are requested
-	 * @return List<CardDTO> the list of all cards associated with user as CardDTOs
-	 */
 	@Override
 	public List<CardDTO> getCardsByUser(String userId) {
 		List<CardDTO> returnValue = new ArrayList<>();
@@ -162,7 +142,7 @@ public class CardServiceImpl implements CardService {
 		ModelMapper modelMapper = new ModelMapper();
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-		for(CardEntity card : cards){
+		for (CardEntity card : cards) {
 			CardDTO cardDTO = modelMapper.map(card, CardDTO.class);
 			returnValue.add(cardDTO);
 		}
@@ -177,13 +157,13 @@ public class CardServiceImpl implements CardService {
 	 *
 	 * @return String the string representation of the new credit card number
 	 */
-	private String generateCardNumber(){
+	private String generateCardNumber() {
 		String majorIndustryIdentifier = "9";
 		String issuerIdentificationNumber = "911-42";
 		StringBuilder stringBuilder = new StringBuilder();
 		Random random = new Random();
-		for(int i = 0; i < 10; i++){
-			if(i == 2 || i == 6){
+		for (int i = 0; i < 10; i++) {
+			if (i == 2 || i == 6) {
 				stringBuilder.append("-");
 			}
 			int number = random.nextInt(10);
