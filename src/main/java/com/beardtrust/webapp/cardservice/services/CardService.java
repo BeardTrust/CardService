@@ -20,4 +20,6 @@ public interface CardService {
 	CardSignUpResponseModel applyForCard(String userId, CardSignUpRequestModel signUpRequest);
 
 	CardDTO getStatus(String userId, String cardId);
+
+	List<CardDTO> getCardsByUser(String userId);
 }

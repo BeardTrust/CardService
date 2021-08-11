@@ -90,6 +90,8 @@ public class CardServiceImpl implements CardService {
 		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(signUpRequest.getCardType());
 		CardEntity card = new CardEntity();
 
+		// Todo: Implement update user details logic
+
 		if(cardType.isPresent()){
 			card.setBalance(0.00);
 			card.setCardType(cardType.get());
@@ -101,9 +103,14 @@ public class CardServiceImpl implements CardService {
 			card.setBillCycleLength(30);
 			card.setCreateDate(LocalDate.now());
 			card.setExpireDate(card.getCreateDate().plusYears(3));
-			card.setNickname(signUpRequest.getNickname());
+			if(signUpRequest.getNickname().length() > 0){
+				card.setNickname(signUpRequest.getNickname());
+			} else {
+				card.setNickname(cardType.get().toString().toUpperCase() + "_CARD");
+			}
+
 			card = cardRepo.save(card);
-			log.info("New card added to database " + card.getCardNumber());
+			log.info("New card added to database " + card.getCardId());
 		} else {
 			log.error("Card type " + signUpRequest.getCardType() + " is not a valid card type");
 			card = new CardEntity();
@@ -137,6 +144,30 @@ public class CardServiceImpl implements CardService {
 			}
 		}
 		return status;
+	}
+
+	/**
+	 * This method receives a user's id as a string parameter and uses it to retrieve
+	 * a list of card entities associated with that user id, then creates a list of
+	 * card data transfer objects from the list of card entities and returns the list
+	 * of card data transfer objects.
+	 *
+	 * @param userId String the userId of the user whose cards are requested
+	 * @return List<CardDTO> the list of all cards associated with user as CardDTOs
+	 */
+	@Override
+	public List<CardDTO> getCardsByUser(String userId) {
+		List<CardDTO> returnValue = new ArrayList<>();
+		List<CardEntity> cards = cardRepo.findAllByUserId(userId);
+		ModelMapper modelMapper = new ModelMapper();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+		for(CardEntity card : cards){
+			CardDTO cardDTO = modelMapper.map(card, CardDTO.class);
+			returnValue.add(cardDTO);
+		}
+
+		return returnValue;
 	}
 
 	/**

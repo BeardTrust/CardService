@@ -18,4 +18,5 @@ public class CardDTO implements Serializable{
 	private Boolean activeStatus;
 	private String expireDate;
 
+
 }

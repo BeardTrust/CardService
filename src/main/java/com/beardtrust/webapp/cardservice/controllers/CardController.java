@@ -40,32 +40,32 @@ public class CardController {
 	
 	@PostMapping()
 	//@PreAuthorize("hasAuthority('admin')")
-	public void createUser(@RequestBody CardEntity card) {
+	public void createCard(@RequestBody CardEntity card) {
 		cardService.save(card);
 	}
 	
 	@GetMapping()
 	//@PreAuthorize("hasAuthority('admin')")
-	public List<CardEntity> displayAllUsers(){
+	public List<CardEntity> displayAllCards(){
 		return cardService.getAll();
 	}
 	
 	@GetMapping("/{id}")
-	//@PreAuthorize("hasAuthority('admin') or principal == #id")
-	public CardEntity displayUserById(@PathVariable String id) {
+	//@PreAuthorize("hasAuthority('admin')")
+	public CardEntity displayCardById(@PathVariable String id) {
 		return cardService.getById(id);
 	}
 
 	@PutMapping("/{id}")
 	//@PreAuthorize("hasAuthority('admin')")
-	public void updateUser(@RequestBody CardEntity card, @PathVariable String id) {
+	public void updateCard(@RequestBody CardEntity card, @PathVariable String id) {
 		
 		cardService.save(card);
 	}
 	
 	@DeleteMapping("/{id}")
 	//@PreAuthorize("hasAuthority('admin')")
-	public void deleteUser(@PathVariable String id){
+	public void deleteCard(@PathVariable String id){
 		cardService.deleteById(id);
 	}
 
@@ -93,12 +93,24 @@ public class CardController {
 	@PreAuthorize("permitAll()")
 	@GetMapping(path = "/{id}/{cardId}")
 	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<CardDTO> getCardStatus(@PathVariable("id") String userId, @PathVariable("cardId") String
-												 cardId){
+	public ResponseEntity<CardDTO> getCardStatus(@PathVariable("id") String userId,
+												 @PathVariable("cardId") String cardId){
 		ResponseEntity<CardDTO> response = null;
 		log.info("Card status report for " + cardId);
 		CardDTO status = cardService.getStatus(userId, cardId);
 		response = new ResponseEntity<>(status, HttpStatus.OK);
+		return response;
+	}
+
+	@PreAuthorize("permitAll()")
+	@GetMapping(path = "/{id}/all")
+	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	public ResponseEntity<List<CardDTO>> getCardsByUser(@PathVariable("id") String userId){
+		ResponseEntity<List<CardDTO>> response = null;
+		log.info("Card list requested for " + userId);
+		List<CardDTO> cards = null;
+		cards = cardService.getCardsByUser(userId);
+		response = new ResponseEntity<>(cards, HttpStatus.OK);
 		return response;
 	}
 }

@@ -35,4 +35,9 @@ public class CardTypeEntity {
 	public void setBaseInterestRate(Double baseInterestRate) {
 		this.baseInterestRate = baseInterestRate;
 	}
+
+	@Override
+	public String toString() {
+		return typeName;
+	}
 }
