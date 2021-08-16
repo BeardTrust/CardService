@@ -1,6 +1,7 @@
 package com.beardtrust.webapp.cardservice.services;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
+import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
@@ -148,6 +149,27 @@ public class CardServiceImpl implements CardService {
 		}
 
 		return returnValue;
+	}
+
+	@Override
+	public List<CardTypeDTO> getAvailableCardTypes() {
+		List<CardTypeEntity> cardTypes = cardTypeRepo.getAllByIsAvailable(true);
+
+		if(cardTypes.isEmpty()){
+			log.error("No available card types found");
+		}
+
+		List<CardTypeDTO> results = new ArrayList<>();
+
+		ModelMapper modelMapper = new ModelMapper();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+		for(CardTypeEntity cardTypeEntity : cardTypes){
+			CardTypeDTO cardType = modelMapper.map(cardTypeEntity, CardTypeDTO.class);
+			results.add(cardType);
+		}
+
+		return results;
 	}
 
 	/**
