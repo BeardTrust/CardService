@@ -16,6 +16,7 @@ public class CardTypeEntity {
 	private String id;
 	private String typeName;
 	private Double baseInterestRate;
+	private Boolean isAvailable;
 
 	public String getId() {
 		return id;
@@ -39,6 +40,14 @@ public class CardTypeEntity {
 
 	public void setBaseInterestRate(Double baseInterestRate) {
 		this.baseInterestRate = baseInterestRate;
+	}
+
+	public Boolean getAvailable() {
+		return isAvailable;
+	}
+
+	public void setAvailable(Boolean available) {
+		isAvailable = available;
 	}
 
 	@Override
