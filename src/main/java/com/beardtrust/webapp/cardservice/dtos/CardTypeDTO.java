@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class CardTypeDTO {
 	private String id;
+	private String previewURL;
 	private double baseInterestRate;
-	private String name;
+	private String typeName;
+	private String description;
 }
