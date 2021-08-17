@@ -12,6 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -152,21 +156,30 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	public List<CardTypeDTO> getAvailableCardTypes() {
-		List<CardTypeEntity> cardTypes = cardTypeRepo.getAllByIsAvailable(true);
+	public Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy) {
+		Pageable page = null;
 
-		if(cardTypes.isEmpty()){
-			log.error("No available card types found");
+		List<Sort.Order> orders = new ArrayList<>();
+
+		if(sortBy[0].contains(",")){
+			for(String sortOrder : sortBy){
+				String[] _sortBy = sortOrder.split(",");
+				orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
+			}
+		} else {
+			orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
 		}
 
-		List<CardTypeDTO> results = new ArrayList<>();
+		page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
 
-		ModelMapper modelMapper = new ModelMapper();
-		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		Optional<Page<CardTypeEntity>> cardTypes = cardTypeRepo.findAllByIsAvailable(true, page);
+		Page<CardTypeDTO> results = null;
 
-		for(CardTypeEntity cardTypeEntity : cardTypes){
-			CardTypeDTO cardType = modelMapper.map(cardTypeEntity, CardTypeDTO.class);
-			results.add(cardType);
+		if(cardTypes.isPresent()){
+			ModelMapper modelMapper = new ModelMapper();
+			modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+			results = cardTypes.get().map((cardType) -> modelMapper.map(cardType,CardTypeDTO.class));
 		}
 
 		return results;
@@ -195,5 +208,21 @@ public class CardServiceImpl implements CardService {
 		String cardNumber = majorIndustryIdentifier + issuerIdentificationNumber + stringBuilder;
 
 		return cardRepo.findById(cardNumber).isPresent() ? generateCardNumber() : cardNumber;
+	}
+
+	/**
+	 * This method accepts a string and returns the intended sort direction, ascending or descending.
+	 *
+	 * @param direction String the string indicating the desired sort direction
+	 * @return Sort.Direction the direction in which to sort
+	 */
+	private Sort.Direction getSortDirection(String direction){
+		Sort.Direction returnValue = Sort.Direction.DESC;
+
+		if(direction.equals("asc")){
+			returnValue = Sort.Direction.ASC;
+		}
+
+		return returnValue;
 	}
 }

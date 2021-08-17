@@ -8,6 +8,7 @@ import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
 import com.beardtrust.webapp.cardservice.services.CardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import java.util.List;
 
 /**
@@ -135,9 +137,13 @@ public class CardController {
 	@PreAuthorize("permitAll()")
 	@GetMapping(path = "/available")
 	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<List<CardTypeDTO>> getAvailableCardTypes() {
-		List<CardTypeDTO> availableCardTypes = cardService.getAvailableCardTypes();
+	public ResponseEntity<Page<CardTypeDTO>> getAvailableCardTypes(@RequestParam(name="page", defaultValue = "0")int pageNumber,
+																   @RequestParam(name="size", defaultValue = "10")int pageSize,
+																   @RequestParam(name = "sortBy",
+																		   defaultValue = "id,desc")String[] sortBy) {
+		Page<CardTypeDTO> page = cardService.getAvailableCardTypes(pageNumber, pageSize, sortBy);
+
 		log.info("Request received to view all available cards");
-		return new ResponseEntity<>(availableCardTypes, HttpStatus.OK);
+		return new ResponseEntity<>(page, HttpStatus.OK);
 	}
 }
