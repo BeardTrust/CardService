@@ -140,8 +140,9 @@ public class CardController {
 	public ResponseEntity<Page<CardTypeDTO>> getAvailableCardTypes(@RequestParam(name="page", defaultValue = "0")int pageNumber,
 																   @RequestParam(name="size", defaultValue = "10")int pageSize,
 																   @RequestParam(name = "sortBy",
-																		   defaultValue = "id,desc")String[] sortBy) {
-		Page<CardTypeDTO> page = cardService.getAvailableCardTypes(pageNumber, pageSize, sortBy);
+																		   defaultValue = "id,desc")String[] sortBy,
+																   @RequestParam(name="search", required = false)String searchCriteria) {
+		Page<CardTypeDTO> page = cardService.getAvailableCardTypes(pageNumber, pageSize, sortBy, searchCriteria);
 
 		log.info("Request received to view all available cards");
 		return new ResponseEntity<>(page, HttpStatus.OK);

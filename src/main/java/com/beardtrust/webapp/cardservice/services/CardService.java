@@ -59,5 +59,5 @@ public interface CardService {
 	 *
 	 * @return List<CardTypeDTO> list of all available card types
 	 */
-	Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy);
+	Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy, String search);
 }

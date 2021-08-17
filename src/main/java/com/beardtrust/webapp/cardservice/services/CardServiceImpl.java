@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.*;
 
+import static org.apache.commons.lang.math.NumberUtils.isNumber;
+
 /**
  * This class provides the implementation of the CardService interface.
  *
@@ -156,7 +158,7 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	public Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy) {
+	public Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy, String search) {
 		Pageable page = null;
 
 		List<Sort.Order> orders = new ArrayList<>();
@@ -171,15 +173,30 @@ public class CardServiceImpl implements CardService {
 		}
 
 		page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
+		Page<CardTypeEntity> cardTypes = null;
 
-		Optional<Page<CardTypeEntity>> cardTypes = cardTypeRepo.findAllByIsAvailable(true, page);
+		if(search == null){
+			cardTypes = cardTypeRepo.findAllByIsAvailable(true, page);
+		} else {
+			if(isNumber(search)){
+				cardTypes = cardTypeRepo.findAllByIsAvailableTrueAndBaseInterestRateIsLike(Double.valueOf(search),
+						page);
+			} else {
+				cardTypes =
+						cardTypeRepo.findAllByIsAvailableTrueAndTypeNameOrDescriptionContainsIgnoreCase(
+								search, search, page);
+			}
+		}
+
 		Page<CardTypeDTO> results = null;
 
-		if(cardTypes.isPresent()){
+		if(cardTypes.getTotalElements() > 0){
 			ModelMapper modelMapper = new ModelMapper();
 			modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-			results = cardTypes.get().map((cardType) -> modelMapper.map(cardType,CardTypeDTO.class));
+			results = cardTypes.map((cardType) -> modelMapper.map(cardType,CardTypeDTO.class));
+		} else {
+			log.error("No available card types found");
 		}
 
 		return results;
@@ -217,10 +234,10 @@ public class CardServiceImpl implements CardService {
 	 * @return Sort.Direction the direction in which to sort
 	 */
 	private Sort.Direction getSortDirection(String direction){
-		Sort.Direction returnValue = Sort.Direction.DESC;
+		Sort.Direction returnValue = Sort.Direction.ASC;
 
-		if(direction.equals("asc")){
-			returnValue = Sort.Direction.ASC;
+		if(direction.equals("desc")){
+			returnValue = Sort.Direction.DESC;
 		}
 
 		return returnValue;
