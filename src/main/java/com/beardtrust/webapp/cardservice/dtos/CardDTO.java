@@ -1,6 +1,10 @@
 package com.beardtrust.webapp.cardservice.dtos;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+
+import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
+
 import lombok.Data;
 
 /**
@@ -14,15 +18,15 @@ public class CardDTO implements Serializable{
 	
 	private String cardId;
 	private String userId;
-	private String cardType;
-	private Float balance;
+	private CardTypeEntity cardType;
+	private Double balance;
 	private String cardNumber;
-	private Float interestRate;
-	private String createDate;
+	private Double interestRate;
+	private LocalDate createDate;
 	private String nickname;
 	private Integer billCycleLength;
 	private Boolean activeStatus;
-	private String expireDate;
+	private LocalDate expireDate;
 
 
 }

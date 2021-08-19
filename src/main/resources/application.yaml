@@ -1,7 +1,11 @@
 server:
+<<<<<<< HEAD
   port: ${PORT:7779}
   servlet:
     context-path: /api
+=======
+  port: ${PORT:7778}
+>>>>>>> BTLLC-Feature-79/81/82/84
 management:
   endpoints:
     web:
@@ -10,12 +14,17 @@ management:
   server:
     port: ${ACTPORT:0}
 gateway:
-  ip: ${GATEWAY:localhost}
+  ip: ${GATEWAY:192.168.1.36}
 spring:
   application:
+<<<<<<< HEAD
     name: ${NAME:cards-service}
+=======
+    name: ${NAME:card-service}
+>>>>>>> BTLLC-Feature-79/81/82/84
   h2:
     console:
+      path: /h2
       enabled: true
       settings:
         web-allow-others: true
@@ -25,6 +34,7 @@ spring:
     password: dev
     driver-class-name: org.h2.Driver
   jpa:
+<<<<<<< HEAD
     database-platform: org.hibernate.dialect.H2Dialect
 authorization:
   token:
@@ -34,3 +44,6 @@ authorization:
 token:
   secret: aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj04WnEzS0NCZWQ1UQo=
   expiration: 864000000
+=======
+    database-platform: org.hibernate.dialect.H2Dialect
+>>>>>>> BTLLC-Feature-79/81/82/84

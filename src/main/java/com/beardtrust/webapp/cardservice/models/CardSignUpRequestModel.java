@@ -22,3 +22,4 @@ public class CardSignUpRequestModel implements Serializable {
 	private Date dateOfBirth;
 	private String nickname;
 }
+

@@ -1,30 +1,35 @@
 package com.beardtrust.webapp.cardservice.services;
 
-import java.util.List;
-
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
+import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
+import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
+
 public interface CardService {
-	
-	public List<CardEntity> getAll();
-	
-	public CardEntity getById(String id);
-	
-	public void deleteById(String id);
-	
-	public void save(CardEntity card);
+
+	List<CardEntity> getAll();
+
+	CardEntity getById(String id);
+
+	void deactivateById(String id);
+
+	void update(CardUpdateModel cardUpdateModel);
+
+	CardSignUpResponseModel registerCard(String userId, CardRegistrationModel cardRegistration);
 
 	/**
 	 * This method receives an application for a credit card, processes that application, and
 	 * returns a CardSignUpResponseModel object containing relevant information from the
 	 * application process.
 	 *
-	 * @param userId String the user ID of the applying user
+	 * @param userId        String the user ID of the applying user
 	 * @param signUpRequest SignUpRequestModel the application for the credit card
 	 * @return CardSignUpResponseModel the response object created during the application process
 	 */

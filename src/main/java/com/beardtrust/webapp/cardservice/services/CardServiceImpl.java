@@ -23,6 +23,15 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.apache.commons.lang.math.NumberUtils.isNumber;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
+
+import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
+
+import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 
 /**
  * This class provides the implementation of the CardService interface.
@@ -33,7 +42,6 @@ import static org.apache.commons.lang.math.NumberUtils.isNumber;
 @Service
 @Slf4j
 public class CardServiceImpl implements CardService {
-
 	private final CardRepository cardRepo;
 	private final CardTypeRepository cardTypeRepo;
 
@@ -46,8 +54,8 @@ public class CardServiceImpl implements CardService {
 	@Override
 	@Transactional
 	public List<CardEntity> getAll() {
-
-		List<CardEntity> list = cardRepo.findAll();
+		List<CardEntity> list = cardRepo.findAllActive();
+		log.info("All cards have been retrieved");
 
 		return list;
 	}
@@ -71,21 +79,73 @@ public class CardServiceImpl implements CardService {
 
 	@Override
 	@Transactional
-	public void deleteById(String id) {
-
+	public void deactivateById(String id) {
+		
 		Optional<CardEntity> result = cardRepo.findById(id);
-
-		if (result.isPresent()) {
-			cardRepo.deleteById(id);
-		} else {
+		
+		if(result.isPresent()) {
+			cardRepo.deactivateById(id);
+			log.info("Card id - " + id + " has been deactivated");
+		}
+		else {
 			throw new RuntimeException("Card id - " + id + " not found");
 		}
 	}
-
+	
 	@Override
 	@Transactional
-	public void save(CardEntity card) {
-		cardRepo.save(card);
+	public void update(CardUpdateModel cardUpdateModel) {
+		System.out.println("updateServiceImpl");
+		System.out.println(cardUpdateModel);
+		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardUpdateModel.getCardType());
+		System.out.println(cardType.get());
+		Optional<CardEntity> card = cardRepo.findById(cardUpdateModel.getCardId());
+		card.get().setCardId(cardUpdateModel.getCardId());
+		card.get().setUserId(cardUpdateModel.getUserId());
+		card.get().setCardType(cardType.get());
+		card.get().setBalance(cardUpdateModel.getBalance());
+		card.get().setCardNumber(cardUpdateModel.getCardNumber());
+		card.get().setInterestRate(cardUpdateModel.getInterestRate());
+		card.get().setCreateDate(cardUpdateModel.getCreateDate());
+		card.get().setNickname(cardUpdateModel.getNickname());
+		card.get().setBillCycleLength(cardUpdateModel.getBillCycleLength());
+		card.get().setExpireDate(cardUpdateModel.getExpireDate());
+		System.out.println(card.toString());
+		try {
+		CardEntity result = cardRepo.save(card.get());
+		System.out.println(result);
+		System.out.println("updating in card repo");
+		//log.info("Card id - " + card.getCardId() + " has been saved");
+		}
+		catch(Exception e) {
+			System.out.println("Could not save card");
+		}
+	}
+	
+	@Override
+	@Transactional
+	public CardSignUpResponseModel registerCard(String userId, CardRegistrationModel cardRegistration) {
+		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardRegistration.getCardType());
+		CardEntity card = new CardEntity();
+		
+		if(cardType.isPresent()) {
+			card.setBalance(0.00);
+			card.setCardType(cardType.get());
+			card.setInterestRate(cardType.get().getBaseInterestRate() + cardRegistration.getInterestRate());
+			card.setUserId(userId);
+			card.setCardNumber(generateCardNumber());
+			card.setCardId(UUID.randomUUID().toString());
+			card.setActiveStatus(true);
+			card.setBillCycleLength(cardRegistration.getBillCycleLength());
+			card.setCreateDate(LocalDate.now());
+			card.setExpireDate(card.getCreateDate().plusYears(3));
+			card.setNickname(cardRegistration.getNickname());
+			card = cardRepo.save(card);
+		}
+		
+		CardSignUpResponseModel response = new CardSignUpResponseModel();
+		response.setCardId(card.getCardId());
+		return response;
 	}
 
 	@Override
