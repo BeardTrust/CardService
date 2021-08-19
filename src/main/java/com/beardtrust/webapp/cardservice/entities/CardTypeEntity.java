@@ -14,8 +14,11 @@ import javax.persistence.Table;
 public class CardTypeEntity {
 	@Id
 	private String id;
+	private String previewURL;
 	private String typeName;
+	private String description;
 	private Double baseInterestRate;
+	private Boolean isAvailable;
 
 	public String getId() {
 		return id;
@@ -23,6 +26,14 @@ public class CardTypeEntity {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getPreviewURL() {
+		return previewURL;
+	}
+
+	public void setPreviewURL(String previewURL) {
+		this.previewURL = previewURL;
 	}
 
 	public String getTypeName() {
@@ -39,6 +50,22 @@ public class CardTypeEntity {
 
 	public void setBaseInterestRate(Double baseInterestRate) {
 		this.baseInterestRate = baseInterestRate;
+	}
+
+	public Boolean getAvailable() {
+		return isAvailable;
+	}
+
+	public void setAvailable(Boolean available) {
+		isAvailable = available;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override

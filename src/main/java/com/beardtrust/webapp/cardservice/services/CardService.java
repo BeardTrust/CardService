@@ -3,9 +3,11 @@ package com.beardtrust.webapp.cardservice.services;
 import java.util.List;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
+import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
+import org.springframework.data.domain.Page;
 
 public interface CardService {
 	
@@ -48,4 +50,14 @@ public interface CardService {
 	 * @return List<CardDTO> the list of all cards associated with user as CardDTOs
 	 */
 	List<CardDTO> getCardsByUser(String userId);
+
+	/**
+	 * This method retrieves a list of all currently available card types from the
+	 * database and returns them as a Page of CardTypeDTOs of the specified size
+	 * and placement in the sequence of pages sorted by the provided criteria of
+	 * field and direction.
+	 *
+	 * @return List<CardTypeDTO> list of all available card types
+	 */
+	Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy, String search);
 }

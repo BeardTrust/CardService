@@ -1,6 +1,7 @@
 package com.beardtrust.webapp.cardservice.services;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
+import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
@@ -11,11 +12,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
+
+import static org.apache.commons.lang.math.NumberUtils.isNumber;
 
 /**
  * This class provides the implementation of the CardService interface.
@@ -150,6 +157,51 @@ public class CardServiceImpl implements CardService {
 		return returnValue;
 	}
 
+	@Override
+	public Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy, String search) {
+		Pageable page = null;
+
+		List<Sort.Order> orders = new ArrayList<>();
+
+		if(sortBy[0].contains(",")){
+			for(String sortOrder : sortBy){
+				String[] _sortBy = sortOrder.split(",");
+				orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
+			}
+		} else {
+			orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
+		}
+
+		page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
+		Page<CardTypeEntity> cardTypes = null;
+
+		if(search == null){
+			cardTypes = cardTypeRepo.findAllByIsAvailable(true, page);
+		} else {
+			if(isNumber(search)){
+				cardTypes = cardTypeRepo.findAllByIsAvailableTrueAndBaseInterestRateIsLike(Double.valueOf(search),
+						page);
+			} else {
+				cardTypes =
+						cardTypeRepo.findAllByIsAvailableTrueAndTypeNameOrDescriptionContainsIgnoreCase(
+								search, search, page);
+			}
+		}
+
+		Page<CardTypeDTO> results = null;
+
+		if(cardTypes.getTotalElements() > 0){
+			ModelMapper modelMapper = new ModelMapper();
+			modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+			results = cardTypes.map((cardType) -> modelMapper.map(cardType,CardTypeDTO.class));
+		} else {
+			log.error("No available card types found");
+		}
+
+		return results;
+	}
+
 	/**
 	 * This method generates a credit card number for a new credit card, looks for duplication in
 	 * the database, and returns a unique card number using the specified major industry identifier
@@ -173,5 +225,21 @@ public class CardServiceImpl implements CardService {
 		String cardNumber = majorIndustryIdentifier + issuerIdentificationNumber + stringBuilder;
 
 		return cardRepo.findById(cardNumber).isPresent() ? generateCardNumber() : cardNumber;
+	}
+
+	/**
+	 * This method accepts a string and returns the intended sort direction, ascending or descending.
+	 *
+	 * @param direction String the string indicating the desired sort direction
+	 * @return Sort.Direction the direction in which to sort
+	 */
+	private Sort.Direction getSortDirection(String direction){
+		Sort.Direction returnValue = Sort.Direction.ASC;
+
+		if(direction.equals("desc")){
+			returnValue = Sort.Direction.DESC;
+		}
+
+		return returnValue;
 	}
 }

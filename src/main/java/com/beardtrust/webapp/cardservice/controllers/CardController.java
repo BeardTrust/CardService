@@ -1,12 +1,14 @@
 package com.beardtrust.webapp.cardservice.controllers;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
+import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
 import com.beardtrust.webapp.cardservice.services.CardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -123,5 +125,25 @@ public class CardController {
 		cards = cardService.getCardsByUser(userId);
 		response = new ResponseEntity<>(cards, HttpStatus.OK);
 		return response;
+	}
+
+	/**
+	 * This method exposes the card service's method for getting all available card types to the
+	 * /cards/available endpoint.
+	 *
+	 * @return ResponseEntity<List<CardTypeDTO>> list of all currently available card types
+	 */
+	@PreAuthorize("permitAll()")
+	@GetMapping(path = "/available")
+	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	public ResponseEntity<Page<CardTypeDTO>> getAvailableCardTypes(@RequestParam(name="page", defaultValue = "0")int pageNumber,
+																   @RequestParam(name="size", defaultValue = "10")int pageSize,
+																   @RequestParam(name = "sortBy",
+																		   defaultValue = "id,desc")String[] sortBy,
+																   @RequestParam(name="search", required = false)String searchCriteria) {
+		Page<CardTypeDTO> page = cardService.getAvailableCardTypes(pageNumber, pageSize, sortBy, searchCriteria);
+
+		log.info("Request received to view all available cards");
+		return new ResponseEntity<>(page, HttpStatus.OK);
 	}
 }
