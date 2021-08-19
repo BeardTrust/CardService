@@ -1,7 +1,5 @@
 server:
   port: ${PORT:7778}
-  servlet:
-    context-path: /api
 management:
   endpoints:
     web:
@@ -10,12 +8,13 @@ management:
   server:
     port: ${ACTPORT:0}
 gateway:
-  ip: ${GATEWAY:localhost}
+  ip: ${GATEWAY:192.168.1.36}
 spring:
   application:
     name: ${NAME:card-service}
   h2:
     console:
+      path: /h2
       enabled: true
       settings:
         web-allow-others: true
@@ -26,11 +25,3 @@ spring:
     driver-class-name: org.h2.Driver
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
-authorization:
-  token:
-    header:
-      name: Authorization
-      prefix: Bearer
-token:
-  secret: aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj04WnEzS0NCZWQ1UQo=
-  expiration: 864000000
