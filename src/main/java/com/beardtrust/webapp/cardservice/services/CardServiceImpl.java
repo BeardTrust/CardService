@@ -46,13 +46,51 @@ public class CardServiceImpl implements CardService {
 
 	@Override
 	@Transactional
-	public List<CardEntity> getAll() {
-		List<CardEntity> list = cardRepo.findAllActive();
-		log.info("All cards have been retrieved");
+	public Page<CardDTO> getAll(int pageNumber, int pageSize, String[] sortBy, String search) {
+		List<Sort.Order> orders = new ArrayList<>();
 
-		return list;
+		if (sortBy[0].contains(",")) {
+			for (String sortOrder : sortBy) {
+				String[] _sortBy = sortOrder.split(",");
+				orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
+			}
+		} else {
+			orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
+		}
+
+		Pageable page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
+		Page<CardEntity> entities = null;
+		Page<CardDTO> response = null;
+
+		ModelMapper modelMapper = new ModelMapper();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+		System.out.println(search);
+
+		if (search == null) {
+			System.out.println("*** Inside search == null ***");
+			entities = cardRepo.findAll(page);
+		} else {
+			if (isNumber(search)) {
+				System.out.println("*** Inside isNumber(search) ***");
+				entities = cardRepo.findAllByBalanceOrInterestRateIsLike(Double.valueOf(search),
+						Double.valueOf(search), page);
+			} else {
+				System.out.println("*** Inside search is a string ***");
+				entities =
+						cardRepo.findAllByCardIdOrUserIdOrCardNumberOrCardType_TypeNameOrNicknameContainsIgnoreCase(search,
+								search, search, search, search, page);
+			}
+		}
+
+		if (entities.getTotalElements() > 0) {
+			response = entities.map((entity) -> modelMapper.map(entity, CardDTO.class));
+		} else {
+			log.error("No cards found");
+		}
+
+		return response;
 	}
-
 	@Override
 	@Transactional
 	public CardEntity getById(String id) {

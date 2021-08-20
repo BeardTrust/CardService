@@ -54,10 +54,18 @@ public class CardController {
 	}
 
 	@GetMapping()
-	@PreAuthorize("permitAll()")
 	//@PreAuthorize("hasAuthority('admin')")
-	public List<CardEntity> displayAllCards() {
-		return cardService.getAll();
+	public ResponseEntity<Page<CardDTO>> displayAllCards(@RequestParam(name="page", defaultValue = "0")int pageNumber,
+														 @RequestParam(name="size", defaultValue = "10")int pageSize,
+														 @RequestParam(name = "sortBy",
+																 defaultValue = "cardId,asc")String[] sortBy,
+														 @RequestParam(name="search", required = false)String searchCriteria) {
+		ResponseEntity<Page<CardDTO>> response = null;
+
+		response = new ResponseEntity<>(cardService.getAll(pageNumber, pageSize, sortBy, searchCriteria),
+				HttpStatus.OK);
+
+		return response;
 	}
 
 	@GetMapping("/{id}")

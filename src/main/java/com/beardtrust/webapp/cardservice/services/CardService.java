@@ -14,7 +14,7 @@ import java.util.List;
 
 public interface CardService {
 
-	List<CardEntity> getAll();
+	Page<CardDTO> getAll(int pageNumber, int pageSize, String[] sortBy, String search);
 
 	CardEntity getById(String id);
 
