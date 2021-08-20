@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -25,7 +26,10 @@ public interface CardRepository extends JpaRepository<CardEntity, String> {
 																										String cardTypeName,
 																										String nickname,
 																										Pageable page);
+
 	Page<CardEntity> findAllByBalanceOrInterestRateIsLike(Double balance, Double interestRate, Pageable page);
+
+	Page<CardEntity> findAllByCreateDateOrExpireDateIsLike(LocalDate createDate, LocalDate expireDate, Pageable page);
 
 	/**
 	 * This method accepts a user id as an argument and returns the list of
@@ -40,6 +44,5 @@ public interface CardRepository extends JpaRepository<CardEntity, String> {
 	@Query(value = "update cards set active_status=false where card_id=?1", nativeQuery = true)
 	void deactivateById(String cardId);
 
-	@Query(value = "select * from cards where active_status=true", nativeQuery = true)
-	List<CardEntity> findAllActive();
+	Page<CardEntity> findAllByActiveStatusTrue(Pageable page);
 }

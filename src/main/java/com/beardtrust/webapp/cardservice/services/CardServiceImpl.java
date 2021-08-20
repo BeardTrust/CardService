@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.apache.commons.validator.GenericValidator;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -47,41 +48,31 @@ public class CardServiceImpl implements CardService {
 	@Override
 	@Transactional
 	public Page<CardDTO> getAll(int pageNumber, int pageSize, String[] sortBy, String search) {
-		List<Sort.Order> orders = new ArrayList<>();
-
-		if (sortBy[0].contains(",")) {
-			for (String sortOrder : sortBy) {
-				String[] _sortBy = sortOrder.split(",");
-				orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
-			}
-		} else {
-			orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
-		}
+		List<Sort.Order> orders = parseOrders(sortBy);
 
 		Pageable page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
-		Page<CardEntity> entities = null;
 		Page<CardDTO> response = null;
 
 		ModelMapper modelMapper = new ModelMapper();
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-		System.out.println(search);
+		Page<CardEntity> entities;
 
 		if (search == null) {
-			System.out.println("*** Inside search == null ***");
 			entities = cardRepo.findAll(page);
 		} else {
 			if (isNumber(search)) {
-				System.out.println("*** Inside isNumber(search) ***");
 				entities = cardRepo.findAllByBalanceOrInterestRateIsLike(Double.valueOf(search),
 						Double.valueOf(search), page);
+			} else if (GenericValidator.isDate(search, "yyyy-MM-dd", true)){
+				LocalDate dateSearch = LocalDate.parse(search);
+				entities = cardRepo.findAllByCreateDateOrExpireDateIsLike(dateSearch, dateSearch, page);
 			} else {
-				System.out.println("*** Inside search is a string ***");
-				entities =
-						cardRepo.findAllByCardIdOrUserIdOrCardNumberOrCardType_TypeNameOrNicknameContainsIgnoreCase(search,
-								search, search, search, search, page);
+					entities =
+							cardRepo.findAllByCardIdOrUserIdOrCardNumberOrCardType_TypeNameOrNicknameContainsIgnoreCase(search,
+									search, search, search, search, page);
+				}
 			}
-		}
 
 		if (entities.getTotalElements() > 0) {
 			response = entities.map((entity) -> modelMapper.map(entity, CardDTO.class));
@@ -91,6 +82,7 @@ public class CardServiceImpl implements CardService {
 
 		return response;
 	}
+
 	@Override
 	@Transactional
 	public CardEntity getById(String id) {
@@ -125,10 +117,8 @@ public class CardServiceImpl implements CardService {
 	@Override
 	@Transactional
 	public void update(CardUpdateModel cardUpdateModel) {
-		System.out.println("updateServiceImpl");
-		System.out.println(cardUpdateModel);
 		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardUpdateModel.getCardType());
-		System.out.println(cardType.get());
+
 		Optional<CardEntity> card = cardRepo.findById(cardUpdateModel.getCardId());
 		card.get().setCardId(cardUpdateModel.getCardId());
 		card.get().setUserId(cardUpdateModel.getUserId());
@@ -143,8 +133,6 @@ public class CardServiceImpl implements CardService {
 		System.out.println(card);
 		try {
 			CardEntity result = cardRepo.save(card.get());
-			System.out.println(result);
-			System.out.println("updating in card repo");
 			//log.info("Card id - " + card.getCardId() + " has been saved");
 		} catch (Exception e) {
 			System.out.println("Could not save card");
@@ -250,22 +238,13 @@ public class CardServiceImpl implements CardService {
 	public Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy, String search) {
 		Pageable page = null;
 
-		List<Sort.Order> orders = new ArrayList<>();
-
-		if (sortBy[0].contains(",")) {
-			for (String sortOrder : sortBy) {
-				String[] _sortBy = sortOrder.split(",");
-				orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
-			}
-		} else {
-			orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
-		}
+		List<Sort.Order> orders = parseOrders(sortBy);
 
 		page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
 		Page<CardTypeEntity> cardTypes = null;
 
 		if (search == null) {
-			cardTypes = cardTypeRepo.findAllByIsAvailable(true, page);
+			cardTypes = cardTypeRepo.findAllByIsAvailableTrue(page);
 		} else {
 			if (isNumber(search)) {
 				cardTypes = cardTypeRepo.findAllByIsAvailableTrueAndBaseInterestRateIsLike(Double.valueOf(search),
@@ -330,5 +309,27 @@ public class CardServiceImpl implements CardService {
 		}
 
 		return returnValue;
+	}
+
+	/**
+	 * This method takes an array of strings, sortBy, and parses that string to produce
+	 * a list of sort orders to use.
+	 *
+	 * @param sortBy String[] the string of sorting instructions
+	 * @return List<Sort.Order> the parsed collection of sorting instructions
+	 */
+	private List<Sort.Order> parseOrders(String[] sortBy) {
+		List<Sort.Order> orders = new ArrayList<>();
+
+		if (sortBy[0].contains(",")) {
+			for (String sortOrder : sortBy) {
+				String[] _sortBy = sortOrder.split(",");
+				orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
+			}
+		} else {
+			orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
+		}
+
+		return orders;
 	}
 }
