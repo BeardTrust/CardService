@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+
 /**
  * This class represents the card types as found in the database.
  *
@@ -19,6 +20,16 @@ public class CardTypeEntity {
 	private String description;
 	private Double baseInterestRate;
 	private Boolean isAvailable;
+
+	public CardTypeEntity(){
+		super();
+	}
+	public CardTypeEntity(String id, String typeName, Double baseInterestRate) {
+		super();
+		this.id = id;
+		this.typeName = typeName;
+		this.baseInterestRate = baseInterestRate;
+	}
 
 	public String getId() {
 		return id;

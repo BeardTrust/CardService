@@ -1,22 +1,19 @@
-package com.beardtrust.webapp.cardservice.dtos;
+package com.beardtrust.webapp.cardservice.models;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * This class provides an object for the transfer of card data
- * outside of the cards service.
- *
- * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
- */
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
-public class CardDTO implements Serializable{
+public class CardUpdateModel {
 	
 	private String cardId;
 	private String userId;
-	private CardTypeDTO cardType;
+	private String cardType;
 	private Double balance;
 	private String cardNumber;
 	private Double interestRate;

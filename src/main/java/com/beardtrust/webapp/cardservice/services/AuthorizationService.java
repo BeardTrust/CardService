@@ -1,5 +1,8 @@
 package com.beardtrust.webapp.cardservice.services;
 
-public interface AuthorizationService {
+import com.beardtrust.webapp.cardservice.dtos.UserDTO;
 
+public interface AuthorizationService {
+	
+	UserDTO getUserByUserId(String id);
 }

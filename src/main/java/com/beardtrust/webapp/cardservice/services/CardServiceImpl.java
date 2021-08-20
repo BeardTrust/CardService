@@ -4,8 +4,10 @@ import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
+import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
+import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import com.beardtrust.webapp.cardservice.repos.CardRepository;
 import com.beardtrust.webapp.cardservice.repos.CardTypeRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +35,6 @@ import static org.apache.commons.lang.math.NumberUtils.isNumber;
 @Service
 @Slf4j
 public class CardServiceImpl implements CardService {
-
 	private final CardRepository cardRepo;
 	private final CardTypeRepository cardTypeRepo;
 
@@ -46,8 +47,8 @@ public class CardServiceImpl implements CardService {
 	@Override
 	@Transactional
 	public List<CardEntity> getAll() {
-
-		List<CardEntity> list = cardRepo.findAll();
+		List<CardEntity> list = cardRepo.findAllActive();
+		log.info("All cards have been retrieved");
 
 		return list;
 	}
@@ -71,12 +72,13 @@ public class CardServiceImpl implements CardService {
 
 	@Override
 	@Transactional
-	public void deleteById(String id) {
+	public void deactivateById(String id) {
 
 		Optional<CardEntity> result = cardRepo.findById(id);
 
 		if (result.isPresent()) {
-			cardRepo.deleteById(id);
+			cardRepo.deactivateById(id);
+			log.info("Card id - " + id + " has been deactivated");
 		} else {
 			throw new RuntimeException("Card id - " + id + " not found");
 		}
@@ -84,8 +86,57 @@ public class CardServiceImpl implements CardService {
 
 	@Override
 	@Transactional
-	public void save(CardEntity card) {
-		cardRepo.save(card);
+	public void update(CardUpdateModel cardUpdateModel) {
+		System.out.println("updateServiceImpl");
+		System.out.println(cardUpdateModel);
+		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardUpdateModel.getCardType());
+		System.out.println(cardType.get());
+		Optional<CardEntity> card = cardRepo.findById(cardUpdateModel.getCardId());
+		card.get().setCardId(cardUpdateModel.getCardId());
+		card.get().setUserId(cardUpdateModel.getUserId());
+		card.get().setCardType(cardType.get());
+		card.get().setBalance(cardUpdateModel.getBalance());
+		card.get().setCardNumber(cardUpdateModel.getCardNumber());
+		card.get().setInterestRate(cardUpdateModel.getInterestRate());
+		card.get().setCreateDate(cardUpdateModel.getCreateDate());
+		card.get().setNickname(cardUpdateModel.getNickname());
+		card.get().setBillCycleLength(cardUpdateModel.getBillCycleLength());
+		card.get().setExpireDate(cardUpdateModel.getExpireDate());
+		System.out.println(card);
+		try {
+			CardEntity result = cardRepo.save(card.get());
+			System.out.println(result);
+			System.out.println("updating in card repo");
+			//log.info("Card id - " + card.getCardId() + " has been saved");
+		} catch (Exception e) {
+			System.out.println("Could not save card");
+		}
+	}
+
+	@Override
+	@Transactional
+	public CardSignUpResponseModel registerCard(String userId, CardRegistrationModel cardRegistration) {
+		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardRegistration.getCardType());
+		CardEntity card = new CardEntity();
+
+		if (cardType.isPresent()) {
+			card.setBalance(0.00);
+			card.setCardType(cardType.get());
+			card.setInterestRate(cardType.get().getBaseInterestRate() + cardRegistration.getInterestRate());
+			card.setUserId(userId);
+			card.setCardNumber(generateCardNumber());
+			card.setCardId(UUID.randomUUID().toString());
+			card.setActiveStatus(true);
+			card.setBillCycleLength(cardRegistration.getBillCycleLength());
+			card.setCreateDate(LocalDate.now());
+			card.setExpireDate(card.getCreateDate().plusYears(3));
+			card.setNickname(cardRegistration.getNickname());
+			card = cardRepo.save(card);
+		}
+
+		CardSignUpResponseModel response = new CardSignUpResponseModel();
+		response.setCardId(card.getCardId());
+		return response;
 	}
 
 	@Override
@@ -163,8 +214,8 @@ public class CardServiceImpl implements CardService {
 
 		List<Sort.Order> orders = new ArrayList<>();
 
-		if(sortBy[0].contains(",")){
-			for(String sortOrder : sortBy){
+		if (sortBy[0].contains(",")) {
+			for (String sortOrder : sortBy) {
 				String[] _sortBy = sortOrder.split(",");
 				orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
 			}
@@ -175,10 +226,10 @@ public class CardServiceImpl implements CardService {
 		page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
 		Page<CardTypeEntity> cardTypes = null;
 
-		if(search == null){
+		if (search == null) {
 			cardTypes = cardTypeRepo.findAllByIsAvailable(true, page);
 		} else {
-			if(isNumber(search)){
+			if (isNumber(search)) {
 				cardTypes = cardTypeRepo.findAllByIsAvailableTrueAndBaseInterestRateIsLike(Double.valueOf(search),
 						page);
 			} else {
@@ -190,11 +241,11 @@ public class CardServiceImpl implements CardService {
 
 		Page<CardTypeDTO> results = null;
 
-		if(cardTypes.getTotalElements() > 0){
+		if (cardTypes.getTotalElements() > 0) {
 			ModelMapper modelMapper = new ModelMapper();
 			modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-			results = cardTypes.map((cardType) -> modelMapper.map(cardType,CardTypeDTO.class));
+			results = cardTypes.map((cardType) -> modelMapper.map(cardType, CardTypeDTO.class));
 		} else {
 			log.error("No available card types found");
 		}
@@ -233,10 +284,10 @@ public class CardServiceImpl implements CardService {
 	 * @param direction String the string indicating the desired sort direction
 	 * @return Sort.Direction the direction in which to sort
 	 */
-	private Sort.Direction getSortDirection(String direction){
+	private Sort.Direction getSortDirection(String direction) {
 		Sort.Direction returnValue = Sort.Direction.ASC;
 
-		if(direction.equals("desc")){
+		if (direction.equals("desc")) {
 			returnValue = Sort.Direction.DESC;
 		}
 

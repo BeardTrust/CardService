@@ -1,10 +1,13 @@
 package com.beardtrust.webapp.cardservice.controllers;
 
+
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
+import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
+import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import com.beardtrust.webapp.cardservice.services.CardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +40,21 @@ public class CardController {
 		this.cardService = cardService;
 	}
 
-	@PostMapping()
-	//@PreAuthorize("hasAuthority('admin')")
-	public void createCard(@RequestBody CardEntity card) {
-		cardService.save(card);
+	@PreAuthorize("permitAll()")
+	@PostMapping(path = "/register/{id}")
+	@Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	public ResponseEntity<CardSignUpResponseModel> registerCard(@PathVariable("id") String userId,
+																@RequestBody CardRegistrationModel cardRegistration) {
+		ResponseEntity<CardSignUpResponseModel> response = null;
+		System.out.println(userId);
+		System.out.println("Signup Request: " + cardRegistration);
+		response = new ResponseEntity<>(cardService.registerCard(userId, cardRegistration), HttpStatus.CREATED);
+		return response;
 	}
 
 	@GetMapping()
+	@PreAuthorize("permitAll()")
 	//@PreAuthorize("hasAuthority('admin')")
 	public List<CardEntity> displayAllCards() {
 		return cardService.getAll();
@@ -51,21 +62,24 @@ public class CardController {
 
 	@GetMapping("/{id}")
 	//@PreAuthorize("hasAuthority('admin')")
+	@PreAuthorize("permitAll()")
 	public CardEntity displayCardById(@PathVariable String id) {
 		return cardService.getById(id);
 	}
 
-	@PutMapping("/{id}")
+	@PutMapping()
+	@PreAuthorize("permitAll()")
 	//@PreAuthorize("hasAuthority('admin')")
-	public void updateCard(@RequestBody CardEntity card, @PathVariable String id) {
-
-		cardService.save(card);
+	public void updateCard(@RequestBody CardUpdateModel cardUpdateModel) {
+		System.out.println("updateCard");
+		cardService.update(cardUpdateModel);
 	}
 
 	@DeleteMapping("/{id}")
+	@PreAuthorize("permitAll()")
 	//@PreAuthorize("hasAuthority('admin')")
-	public void deleteCard(@PathVariable String id) {
-		cardService.deleteById(id);
+	public void deactivateCard(@PathVariable String id) {
+		cardService.deactivateById(id);
 	}
 
 
@@ -131,16 +145,16 @@ public class CardController {
 	 * This method exposes the card service's method for getting all available card types to the
 	 * /cards/available endpoint.
 	 *
-	 * @return ResponseEntity<List<CardTypeDTO>> list of all currently available card types
+	 * @return ResponseEntity<List < CardTypeDTO>> list of all currently available card types
 	 */
 	@PreAuthorize("permitAll()")
 	@GetMapping(path = "/available")
 	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<Page<CardTypeDTO>> getAvailableCardTypes(@RequestParam(name="page", defaultValue = "0")int pageNumber,
-																   @RequestParam(name="size", defaultValue = "10")int pageSize,
+	public ResponseEntity<Page<CardTypeDTO>> getAvailableCardTypes(@RequestParam(name = "page", defaultValue = "0") int pageNumber,
+																   @RequestParam(name = "size", defaultValue = "10") int pageSize,
 																   @RequestParam(name = "sortBy",
-																		   defaultValue = "id,desc")String[] sortBy,
-																   @RequestParam(name="search", required = false)String searchCriteria) {
+																		   defaultValue = "id,desc") String[] sortBy,
+																   @RequestParam(name = "search", required = false) String searchCriteria) {
 		Page<CardTypeDTO> page = cardService.getAvailableCardTypes(pageNumber, pageSize, sortBy, searchCriteria);
 
 		log.info("Request received to view all available cards");
