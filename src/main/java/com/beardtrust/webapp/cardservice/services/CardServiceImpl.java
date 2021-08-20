@@ -4,8 +4,10 @@ import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
+import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
+import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import com.beardtrust.webapp.cardservice.repos.CardRepository;
 import com.beardtrust.webapp.cardservice.repos.CardTypeRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +25,6 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.apache.commons.lang.math.NumberUtils.isNumber;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
-
-import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
-
-import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 
 /**
  * This class provides the implementation of the CardService interface.
@@ -80,18 +73,17 @@ public class CardServiceImpl implements CardService {
 	@Override
 	@Transactional
 	public void deactivateById(String id) {
-		
+
 		Optional<CardEntity> result = cardRepo.findById(id);
-		
-		if(result.isPresent()) {
+
+		if (result.isPresent()) {
 			cardRepo.deactivateById(id);
 			log.info("Card id - " + id + " has been deactivated");
-		}
-		else {
+		} else {
 			throw new RuntimeException("Card id - " + id + " not found");
 		}
 	}
-	
+
 	@Override
 	@Transactional
 	public void update(CardUpdateModel cardUpdateModel) {
@@ -110,25 +102,24 @@ public class CardServiceImpl implements CardService {
 		card.get().setNickname(cardUpdateModel.getNickname());
 		card.get().setBillCycleLength(cardUpdateModel.getBillCycleLength());
 		card.get().setExpireDate(cardUpdateModel.getExpireDate());
-		System.out.println(card.toString());
+		System.out.println(card);
 		try {
-		CardEntity result = cardRepo.save(card.get());
-		System.out.println(result);
-		System.out.println("updating in card repo");
-		//log.info("Card id - " + card.getCardId() + " has been saved");
-		}
-		catch(Exception e) {
+			CardEntity result = cardRepo.save(card.get());
+			System.out.println(result);
+			System.out.println("updating in card repo");
+			//log.info("Card id - " + card.getCardId() + " has been saved");
+		} catch (Exception e) {
 			System.out.println("Could not save card");
 		}
 	}
-	
+
 	@Override
 	@Transactional
 	public CardSignUpResponseModel registerCard(String userId, CardRegistrationModel cardRegistration) {
 		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardRegistration.getCardType());
 		CardEntity card = new CardEntity();
-		
-		if(cardType.isPresent()) {
+
+		if (cardType.isPresent()) {
 			card.setBalance(0.00);
 			card.setCardType(cardType.get());
 			card.setInterestRate(cardType.get().getBaseInterestRate() + cardRegistration.getInterestRate());
@@ -142,7 +133,7 @@ public class CardServiceImpl implements CardService {
 			card.setNickname(cardRegistration.getNickname());
 			card = cardRepo.save(card);
 		}
-		
+
 		CardSignUpResponseModel response = new CardSignUpResponseModel();
 		response.setCardId(card.getCardId());
 		return response;
@@ -223,8 +214,8 @@ public class CardServiceImpl implements CardService {
 
 		List<Sort.Order> orders = new ArrayList<>();
 
-		if(sortBy[0].contains(",")){
-			for(String sortOrder : sortBy){
+		if (sortBy[0].contains(",")) {
+			for (String sortOrder : sortBy) {
 				String[] _sortBy = sortOrder.split(",");
 				orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
 			}
@@ -235,10 +226,10 @@ public class CardServiceImpl implements CardService {
 		page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
 		Page<CardTypeEntity> cardTypes = null;
 
-		if(search == null){
+		if (search == null) {
 			cardTypes = cardTypeRepo.findAllByIsAvailable(true, page);
 		} else {
-			if(isNumber(search)){
+			if (isNumber(search)) {
 				cardTypes = cardTypeRepo.findAllByIsAvailableTrueAndBaseInterestRateIsLike(Double.valueOf(search),
 						page);
 			} else {
@@ -250,11 +241,11 @@ public class CardServiceImpl implements CardService {
 
 		Page<CardTypeDTO> results = null;
 
-		if(cardTypes.getTotalElements() > 0){
+		if (cardTypes.getTotalElements() > 0) {
 			ModelMapper modelMapper = new ModelMapper();
 			modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-			results = cardTypes.map((cardType) -> modelMapper.map(cardType,CardTypeDTO.class));
+			results = cardTypes.map((cardType) -> modelMapper.map(cardType, CardTypeDTO.class));
 		} else {
 			log.error("No available card types found");
 		}
@@ -293,10 +284,10 @@ public class CardServiceImpl implements CardService {
 	 * @param direction String the string indicating the desired sort direction
 	 * @return Sort.Direction the direction in which to sort
 	 */
-	private Sort.Direction getSortDirection(String direction){
+	private Sort.Direction getSortDirection(String direction) {
 		Sort.Direction returnValue = Sort.Direction.ASC;
 
-		if(direction.equals("desc")){
+		if (direction.equals("desc")) {
 			returnValue = Sort.Direction.DESC;
 		}
 

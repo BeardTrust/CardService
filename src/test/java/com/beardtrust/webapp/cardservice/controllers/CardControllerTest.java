@@ -40,7 +40,7 @@ public class CardControllerTest {
 		CardRegistrationModel cardRegistrationModel = new CardRegistrationModel();
 		cardRegistrationModel.setUserId("1123-3948-9807");
 		cardRegistrationModel.setCardType("0");
-		cardRegistrationModel.setInterestRate(new Float(0.001));
+		cardRegistrationModel.setInterestRate(0.001f);
 		cardRegistrationModel.setNickname("card_nickname");
 		cardRegistrationModel.setBillCycleLength(30);
 		String content = (new ObjectMapper()).writeValueAsString(cardRegistrationModel);
