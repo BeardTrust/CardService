@@ -1,5 +1,6 @@
 package com.beardtrust.webapp.cardservice.repos;
 
+import com.beardtrust.webapp.cardservice.entities.Balance;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +28,14 @@ public interface CardRepository extends JpaRepository<CardEntity, String> {
 																										String nickname,
 																										Pageable page);
 
-	Page<CardEntity> findAllByBalanceOrInterestRateIsLike(Double balance, Double interestRate, Pageable page);
+	Page<CardEntity> findAllByUserIdEqualsAndBalanceOrBillCycleLengthOrInterestRateIsLike(String userid,
+																						  Balance balance,
+																						  int billCycleLength,
+																						  Double interestRate,
+																						  Pageable page
+																						  );
+
+	Page<CardEntity> findAllByBalanceOrInterestRateIsLike(Balance balance, Double interestRate, Pageable pageable);
 
 	Page<CardEntity> findAllByCreateDateOrExpireDateIsLike(LocalDate createDate, LocalDate expireDate, Pageable page);
 
@@ -38,11 +46,22 @@ public interface CardRepository extends JpaRepository<CardEntity, String> {
 	 * @param userId String the user id to search for
 	 * @return List<CardEntity> the list of cards associated with the user id
 	 */
-	List<CardEntity> findAllByUserId(String userId);
+	Page<CardEntity> findAllByUserId(String userId, Pageable page);
 
 	@Modifying
 	@Query(value = "update cards set active_status=false where card_id=?1", nativeQuery = true)
 	void deactivateById(String cardId);
 
 	Page<CardEntity> findAllByActiveStatusTrue(Pageable page);
+
+	Page<CardEntity> findAllByUserIdEqualsAndCreateDateOrExpireDateIsLike(String userId,
+																		  LocalDate createDate,
+																		  LocalDate expireDate,
+																		  Pageable page);
+
+	Page<CardEntity> findAllByUserIdEqualsAndCardIdOrNicknameOrCardType_TypeNameContainsIgnoreCase(String userId,
+																								   String cardId,
+																								   String nickname,
+																								   String cardTypeName,
+																								   Pageable page);
 }

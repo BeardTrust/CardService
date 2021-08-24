@@ -8,8 +8,7 @@ import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
 import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import org.springframework.data.domain.Page;
-
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 
 public interface CardService {
@@ -51,10 +50,14 @@ public interface CardService {
 	 * card data transfer objects from the list of card entities and returns the list
 	 * of card data transfer objects.
 	 *
-	 * @param userId String the userId of the user whose cards are requested
-	 * @return List<CardDTO> the list of all cards associated with user as CardDTOs
+	 * @param userId String the user's id
+	 * @param pageNumber int the requested page number
+	 * @param pageSize int the number of items to display per page
+	 * @param sortBy String[] the array of sorting orders
+	 * @param searchCriteria String the matching criteria
+	 * @return Page<CardDTO> the page of cards conforming to the provided specifications
 	 */
-	List<CardDTO> getCardsByUser(String userId);
+	Page<CardDTO> getCardsByUser(String userId, int pageNumber, int pageSize, String[] sortBy, String searchCriteria);
 
 	/**
 	 * This method retrieves a list of all currently available card types from the

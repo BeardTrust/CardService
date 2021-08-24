@@ -2,6 +2,7 @@ package com.beardtrust.webapp.cardservice.services;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
+import com.beardtrust.webapp.cardservice.entities.Balance;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
 import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
@@ -11,6 +12,7 @@ import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import com.beardtrust.webapp.cardservice.repos.CardRepository;
 import com.beardtrust.webapp.cardservice.repos.CardTypeRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.validator.GenericValidator;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.apache.commons.validator.GenericValidator;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -56,23 +57,27 @@ public class CardServiceImpl implements CardService {
 		ModelMapper modelMapper = new ModelMapper();
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-		Page<CardEntity> entities;
+		Page<CardEntity> entities = null;
 
 		if (search == null) {
 			entities = cardRepo.findAll(page);
 		} else {
 			if (isNumber(search)) {
-				entities = cardRepo.findAllByBalanceOrInterestRateIsLike(Double.valueOf(search),
-						Double.valueOf(search), page);
-			} else if (GenericValidator.isDate(search, "yyyy-MM-dd", true)){
+				String[] values = search.split(",");
+				if (values.length == 2) {
+					Balance searchBalance = new Balance(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
+				} else {
+					Balance searchBalance = new Balance(Integer.parseInt(values[0]));
+				}
+			} else if (GenericValidator.isDate(search, "yyyy-MM-dd", true)) {
 				LocalDate dateSearch = LocalDate.parse(search);
 				entities = cardRepo.findAllByCreateDateOrExpireDateIsLike(dateSearch, dateSearch, page);
 			} else {
-					entities =
-							cardRepo.findAllByCardIdOrUserIdOrCardNumberOrCardType_TypeNameOrNicknameContainsIgnoreCase(search,
-									search, search, search, search, page);
-				}
+				entities =
+						cardRepo.findAllByCardIdOrUserIdOrCardNumberOrCardType_TypeNameOrNicknameContainsIgnoreCase(search,
+								search, search, search, search, page);
 			}
+		}
 
 		if (entities.getTotalElements() > 0) {
 			response = entities.map((entity) -> modelMapper.map(entity, CardDTO.class));
@@ -146,7 +151,7 @@ public class CardServiceImpl implements CardService {
 		CardEntity card = new CardEntity();
 
 		if (cardType.isPresent()) {
-			card.setBalance(0.00);
+			card.setBalance(new Balance(0, 0));
 			card.setCardType(cardType.get());
 			card.setInterestRate(cardType.get().getBaseInterestRate() + cardRegistration.getInterestRate());
 			card.setUserId(userId);
@@ -174,7 +179,7 @@ public class CardServiceImpl implements CardService {
 		// Todo: Implement update user details logic
 
 		if (cardType.isPresent()) {
-			card.setBalance(0.00);
+			card.setBalance(new Balance(0, 0));
 			card.setCardType(cardType.get());
 			card.setInterestRate(cardType.get().getBaseInterestRate());
 			card.setUserId(userId);
@@ -220,15 +225,42 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	public List<CardDTO> getCardsByUser(String userId) {
-		List<CardDTO> returnValue = new ArrayList<>();
-		List<CardEntity> cards = cardRepo.findAllByUserId(userId);
-		ModelMapper modelMapper = new ModelMapper();
-		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+	public Page<CardDTO> getCardsByUser(String userId, int pageNumber, int pageSize, String[] sortBy,
+										String searchCriteria) {
+		Page<CardEntity> cards = null;
+		Pageable page = null;
 
-		for (CardEntity card : cards) {
-			CardDTO cardDTO = modelMapper.map(card, CardDTO.class);
-			returnValue.add(cardDTO);
+		List<Sort.Order> orders = parseOrders(sortBy);
+
+		page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
+
+		Balance searchBalance = null;
+
+		if (searchCriteria == null) {
+			cards = cardRepo.findAllByUserId(userId, page);
+		} else if (isNumber(searchCriteria)) {
+				searchBalance = parseBalance(searchCriteria);
+
+				cards = cardRepo.findAllByUserIdEqualsAndBalanceOrBillCycleLengthOrInterestRateIsLike(userId,
+				searchBalance, Integer.parseInt(searchCriteria), Double.parseDouble(searchCriteria), page);
+
+			} else if (GenericValidator.isDate(searchCriteria, "yyyy-MM-dd", true)) {
+				LocalDate dateSearch = LocalDate.parse(searchCriteria);
+				cards = cardRepo.findAllByUserIdEqualsAndCreateDateOrExpireDateIsLike(userId, dateSearch, dateSearch,
+						page);
+			} else {
+				cards =
+						cardRepo.findAllByUserIdEqualsAndCardIdOrNicknameOrCardType_TypeNameContainsIgnoreCase(userId,
+								searchCriteria, searchCriteria, searchCriteria, page);
+			}
+
+		Page<CardDTO> returnValue = null;
+
+		if (cards.getTotalElements() > 0) {
+			ModelMapper modelMapper = new ModelMapper();
+			modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+			returnValue = cards.map((card) -> modelMapper.map(card, CardDTO.class));
 		}
 
 		return returnValue;
@@ -331,5 +363,22 @@ public class CardServiceImpl implements CardService {
 		}
 
 		return orders;
+	}
+
+	private Balance parseBalance(String searchCriteria) {
+		String[] values = searchCriteria.split(",");
+		Balance searchBalance = null;
+
+		if (values.length == 2) {
+			searchBalance = new Balance(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
+		} else {
+			if(Integer.parseInt(values[0]) > 99){
+				searchBalance = new Balance(Integer.parseInt(values[0]), 0);
+			} else {
+				searchBalance = new Balance(Integer.parseInt(values[0]));
+			}
+		}
+
+		return searchBalance;
 	}
 }
