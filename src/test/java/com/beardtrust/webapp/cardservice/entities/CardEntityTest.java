@@ -13,7 +13,7 @@ public class CardEntityTest {
 	public void testConstructor() {
 		CardEntity actualCardEntity = new CardEntity();
 		actualCardEntity.setActiveStatus(true);
-		actualCardEntity.setBalance(10.0);
+		actualCardEntity.setBalance(new Balance(10, 0));
 		actualCardEntity.setBillCycleLength(3);
 		actualCardEntity.setCardId("42");
 		actualCardEntity.setCardNumber("Card Number");
@@ -30,7 +30,7 @@ public class CardEntityTest {
 		actualCardEntity.setNickname("Nickname");
 		actualCardEntity.setUserId("42");
 		assertTrue(actualCardEntity.getActiveStatus());
-		assertEquals(10.0, actualCardEntity.getBalance().doubleValue());
+		assertEquals("10.00", actualCardEntity.getBalance().toString());
 		assertEquals(3, actualCardEntity.getBillCycleLength().intValue());
 		assertEquals("42", actualCardEntity.getCardId());
 		assertEquals("Card Number", actualCardEntity.getCardNumber());

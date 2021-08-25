@@ -2,6 +2,7 @@ package com.beardtrust.webapp.cardservice.services;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
+import com.beardtrust.webapp.cardservice.entities.Balance;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
 import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
@@ -11,6 +12,7 @@ import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import com.beardtrust.webapp.cardservice.repos.CardRepository;
 import com.beardtrust.webapp.cardservice.repos.CardTypeRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.validator.GenericValidator;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,11 +48,44 @@ public class CardServiceImpl implements CardService {
 
 	@Override
 	@Transactional
-	public List<CardEntity> getAll() {
-		List<CardEntity> list = cardRepo.findAllActive();
-		log.info("All cards have been retrieved");
+	public Page<CardDTO> getAll(int pageNumber, int pageSize, String[] sortBy, String search) {
+		List<Sort.Order> orders = parseOrders(sortBy);
 
-		return list;
+		Pageable page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
+		Page<CardDTO> response = null;
+
+		ModelMapper modelMapper = new ModelMapper();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+		Page<CardEntity> entities = null;
+
+		if (search == null) {
+			entities = cardRepo.findAll(page);
+		} else {
+			if (isNumber(search)) {
+				String[] values = search.split(",");
+				if (values.length == 2) {
+					Balance searchBalance = new Balance(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
+				} else {
+					Balance searchBalance = new Balance(Integer.parseInt(values[0]));
+				}
+			} else if (GenericValidator.isDate(search, "yyyy-MM-dd", true)) {
+				LocalDate dateSearch = LocalDate.parse(search);
+				entities = cardRepo.findAllByCreateDateOrExpireDateIsLike(dateSearch, dateSearch, page);
+			} else {
+				entities =
+						cardRepo.findAllByCardIdOrUserIdOrCardNumberOrCardType_TypeNameOrNicknameContainsIgnoreCase(search,
+								search, search, search, search, page);
+			}
+		}
+
+		if (entities.getTotalElements() > 0) {
+			response = entities.map((entity) -> modelMapper.map(entity, CardDTO.class));
+		} else {
+			log.error("No cards found");
+		}
+
+		return response;
 	}
 
 	@Override
@@ -87,10 +122,8 @@ public class CardServiceImpl implements CardService {
 	@Override
 	@Transactional
 	public void update(CardUpdateModel cardUpdateModel) {
-		System.out.println("updateServiceImpl");
-		System.out.println(cardUpdateModel);
 		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardUpdateModel.getCardType());
-		System.out.println(cardType.get());
+
 		Optional<CardEntity> card = cardRepo.findById(cardUpdateModel.getCardId());
 		card.get().setCardId(cardUpdateModel.getCardId());
 		card.get().setUserId(cardUpdateModel.getUserId());
@@ -105,8 +138,6 @@ public class CardServiceImpl implements CardService {
 		System.out.println(card);
 		try {
 			CardEntity result = cardRepo.save(card.get());
-			System.out.println(result);
-			System.out.println("updating in card repo");
 			//log.info("Card id - " + card.getCardId() + " has been saved");
 		} catch (Exception e) {
 			System.out.println("Could not save card");
@@ -120,7 +151,7 @@ public class CardServiceImpl implements CardService {
 		CardEntity card = new CardEntity();
 
 		if (cardType.isPresent()) {
-			card.setBalance(0.00);
+			card.setBalance(new Balance(0, 0));
 			card.setCardType(cardType.get());
 			card.setInterestRate(cardType.get().getBaseInterestRate() + cardRegistration.getInterestRate());
 			card.setUserId(userId);
@@ -148,7 +179,7 @@ public class CardServiceImpl implements CardService {
 		// Todo: Implement update user details logic
 
 		if (cardType.isPresent()) {
-			card.setBalance(0.00);
+			card.setBalance(new Balance(0, 0));
 			card.setCardType(cardType.get());
 			card.setInterestRate(cardType.get().getBaseInterestRate());
 			card.setUserId(userId);
@@ -194,15 +225,42 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	public List<CardDTO> getCardsByUser(String userId) {
-		List<CardDTO> returnValue = new ArrayList<>();
-		List<CardEntity> cards = cardRepo.findAllByUserId(userId);
-		ModelMapper modelMapper = new ModelMapper();
-		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+	public Page<CardDTO> getCardsByUser(String userId, int pageNumber, int pageSize, String[] sortBy,
+										String searchCriteria) {
+		Page<CardEntity> cards = null;
+		Pageable page = null;
 
-		for (CardEntity card : cards) {
-			CardDTO cardDTO = modelMapper.map(card, CardDTO.class);
-			returnValue.add(cardDTO);
+		List<Sort.Order> orders = parseOrders(sortBy);
+
+		page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
+
+		Balance searchBalance = null;
+
+		if (searchCriteria == null) {
+			cards = cardRepo.findAllByUserId(userId, page);
+		} else if (isNumber(searchCriteria)) {
+				searchBalance = parseBalance(searchCriteria);
+
+				cards = cardRepo.findAllByUserIdEqualsAndBalanceOrBillCycleLengthOrInterestRateIsLike(userId,
+				searchBalance, Integer.parseInt(searchCriteria), Double.parseDouble(searchCriteria), page);
+
+			} else if (GenericValidator.isDate(searchCriteria, "yyyy-MM-dd", true)) {
+				LocalDate dateSearch = LocalDate.parse(searchCriteria);
+				cards = cardRepo.findAllByUserIdEqualsAndCreateDateOrExpireDateIsLike(userId, dateSearch, dateSearch,
+						page);
+			} else {
+				cards =
+						cardRepo.findAllByUserIdEqualsAndCardIdOrNicknameOrCardType_TypeNameContainsIgnoreCase(userId,
+								searchCriteria, searchCriteria, searchCriteria, page);
+			}
+
+		Page<CardDTO> returnValue = null;
+
+		if (cards.getTotalElements() > 0) {
+			ModelMapper modelMapper = new ModelMapper();
+			modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+			returnValue = cards.map((card) -> modelMapper.map(card, CardDTO.class));
 		}
 
 		return returnValue;
@@ -212,22 +270,13 @@ public class CardServiceImpl implements CardService {
 	public Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy, String search) {
 		Pageable page = null;
 
-		List<Sort.Order> orders = new ArrayList<>();
-
-		if (sortBy[0].contains(",")) {
-			for (String sortOrder : sortBy) {
-				String[] _sortBy = sortOrder.split(",");
-				orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
-			}
-		} else {
-			orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
-		}
+		List<Sort.Order> orders = parseOrders(sortBy);
 
 		page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
 		Page<CardTypeEntity> cardTypes = null;
 
 		if (search == null) {
-			cardTypes = cardTypeRepo.findAllByIsAvailable(true, page);
+			cardTypes = cardTypeRepo.findAllByIsAvailableTrue(page);
 		} else {
 			if (isNumber(search)) {
 				cardTypes = cardTypeRepo.findAllByIsAvailableTrueAndBaseInterestRateIsLike(Double.valueOf(search),
@@ -292,5 +341,44 @@ public class CardServiceImpl implements CardService {
 		}
 
 		return returnValue;
+	}
+
+	/**
+	 * This method takes an array of strings, sortBy, and parses that string to produce
+	 * a list of sort orders to use.
+	 *
+	 * @param sortBy String[] the string of sorting instructions
+	 * @return List<Sort.Order> the parsed collection of sorting instructions
+	 */
+	private List<Sort.Order> parseOrders(String[] sortBy) {
+		List<Sort.Order> orders = new ArrayList<>();
+
+		if (sortBy[0].contains(",")) {
+			for (String sortOrder : sortBy) {
+				String[] _sortBy = sortOrder.split(",");
+				orders.add(new Sort.Order(getSortDirection(_sortBy[1]), _sortBy[0]));
+			}
+		} else {
+			orders.add(new Sort.Order(getSortDirection(sortBy[1]), sortBy[0]));
+		}
+
+		return orders;
+	}
+
+	private Balance parseBalance(String searchCriteria) {
+		String[] values = searchCriteria.split(",");
+		Balance searchBalance = null;
+
+		if (values.length == 2) {
+			searchBalance = new Balance(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
+		} else {
+			if(Integer.parseInt(values[0]) > 99){
+				searchBalance = new Balance(Integer.parseInt(values[0]), 0);
+			} else {
+				searchBalance = new Balance(Integer.parseInt(values[0]));
+			}
+		}
+
+		return searchBalance;
 	}
 }

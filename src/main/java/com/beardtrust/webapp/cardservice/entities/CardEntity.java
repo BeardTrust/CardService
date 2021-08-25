@@ -22,7 +22,8 @@ public class CardEntity implements Serializable {
 	private String userId;
 	@ManyToOne
 	private CardTypeEntity cardType;
-	private Double balance;
+	@Embedded
+	private Balance balance;
 	@Column(unique = true)
 	private String cardNumber;
 	private Double interestRate;
@@ -37,7 +38,7 @@ public class CardEntity implements Serializable {
 		super();
 	}
 
-	public CardEntity(String cardId, String userId, CardTypeEntity cardType, Double balance, String cardNumber,
+	public CardEntity(String cardId, String userId, CardTypeEntity cardType, Balance balance, String cardNumber,
 					  Double interestRate, LocalDate createDate, String nickname, Integer billCycleLength, Boolean activeStatus,
 					  LocalDate expireDate) {
 		super();
@@ -78,11 +79,11 @@ public class CardEntity implements Serializable {
 		this.cardType = cardType;
 	}
 
-	public Double getBalance() {
+	public Balance getBalance() {
 		return balance;
 	}
 
-	public void setBalance(Double balance) {
+	public void setBalance(Balance balance) {
 		this.balance = balance;
 	}
 

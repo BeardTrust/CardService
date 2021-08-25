@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface CardTypeRepository extends JpaRepository<CardTypeEntity, String> {
-	Page<CardTypeEntity> findAllByIsAvailable(Boolean availability, Pageable page);
+	Page<CardTypeEntity> findAllByIsAvailableTrue(Pageable page);
 
 	Page<CardTypeEntity> findAllByIsAvailableTrueAndTypeNameOrDescriptionContainsIgnoreCase(String typeName,
 																							String description,

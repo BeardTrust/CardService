@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
-import java.util.List;
 
 /**
  * This class provides the rest api endpoints and associated logic.
@@ -54,10 +53,18 @@ public class CardController {
 	}
 
 	@GetMapping()
-	@PreAuthorize("permitAll()")
 	//@PreAuthorize("hasAuthority('admin')")
-	public List<CardEntity> displayAllCards() {
-		return cardService.getAll();
+	public ResponseEntity<Page<CardDTO>> displayAllCards(@RequestParam(name = "page", defaultValue = "0") int pageNumber,
+														 @RequestParam(name = "size", defaultValue = "10") int pageSize,
+														 @RequestParam(name = "sortBy",
+																 defaultValue = "cardId,asc") String[] sortBy,
+														 @RequestParam(name = "search", required = false) String searchCriteria) {
+		ResponseEntity<Page<CardDTO>> response = null;
+
+		response = new ResponseEntity<>(cardService.getAll(pageNumber, pageSize, sortBy, searchCriteria),
+				HttpStatus.OK);
+
+		return response;
 	}
 
 	@GetMapping("/{id}")
@@ -132,11 +139,16 @@ public class CardController {
 	@PreAuthorize("permitAll()")
 	@GetMapping(path = "/{id}/all")
 	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<List<CardDTO>> getCardsByUser(@PathVariable("id") String userId) {
-		ResponseEntity<List<CardDTO>> response = null;
+	public ResponseEntity<Page<CardDTO>> getCardsByUser(@PathVariable("id") String userId,
+														@RequestParam(name = "page", defaultValue = "0") int pageNumber,
+														@RequestParam(name = "size", defaultValue = "10") int pageSize,
+														@RequestParam(name = "sortBy",
+																defaultValue = "cardId,asc") String[] sortBy,
+														@RequestParam(name = "search", required = false) String searchCriteria) {
+		ResponseEntity<Page<CardDTO>> response = null;
 		log.info("Card list requested for " + userId);
-		List<CardDTO> cards = null;
-		cards = cardService.getCardsByUser(userId);
+		Page<CardDTO> cards = null;
+		cards = cardService.getCardsByUser(userId, pageNumber, pageSize, sortBy, searchCriteria);
 		response = new ResponseEntity<>(cards, HttpStatus.OK);
 		return response;
 	}
