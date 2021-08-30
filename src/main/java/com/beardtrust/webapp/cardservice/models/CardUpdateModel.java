@@ -2,7 +2,7 @@ package com.beardtrust.webapp.cardservice.models;
 
 import java.time.LocalDate;
 
-import com.beardtrust.webapp.cardservice.entities.Balance;
+import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,7 @@ public class CardUpdateModel {
 	private String cardId;
 	private String userId;
 	private String cardType;
-	private Balance balance;
+	private CurrencyValue balance;
 	private String cardNumber;
 	private Double interestRate;
 	private LocalDate createDate;

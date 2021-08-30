@@ -2,9 +2,9 @@ package com.beardtrust.webapp.cardservice.services;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
-import com.beardtrust.webapp.cardservice.entities.Balance;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
+import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
 import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
@@ -65,9 +65,10 @@ public class CardServiceImpl implements CardService {
 			if (isNumber(search)) {
 				String[] values = search.split(",");
 				if (values.length == 2) {
-					Balance searchBalance = new Balance(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
+					CurrencyValue searchBalance = new CurrencyValue(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
 				} else {
-					Balance searchBalance = new Balance(Integer.parseInt(values[0]));
+					CurrencyValue searchBalance = new CurrencyValue();
+					searchBalance.setCents(Integer.parseInt(values[0]));
 				}
 			} else if (GenericValidator.isDate(search, "yyyy-MM-dd", true)) {
 				LocalDate dateSearch = LocalDate.parse(search);
@@ -151,7 +152,7 @@ public class CardServiceImpl implements CardService {
 		CardEntity card = new CardEntity();
 
 		if (cardType.isPresent()) {
-			card.setBalance(new Balance(0, 0));
+			card.setBalance(new CurrencyValue(0, 0));
 			card.setCardType(cardType.get());
 			card.setInterestRate(cardType.get().getBaseInterestRate() + cardRegistration.getInterestRate());
 			card.setUserId(userId);
@@ -179,7 +180,7 @@ public class CardServiceImpl implements CardService {
 		// Todo: Implement update user details logic
 
 		if (cardType.isPresent()) {
-			card.setBalance(new Balance(0, 0));
+			card.setBalance(new CurrencyValue(0, 0));
 			card.setCardType(cardType.get());
 			card.setInterestRate(cardType.get().getBaseInterestRate());
 			card.setUserId(userId);
@@ -234,7 +235,7 @@ public class CardServiceImpl implements CardService {
 
 		page = PageRequest.of(pageNumber, pageSize, Sort.by(orders));
 
-		Balance searchBalance = null;
+		CurrencyValue searchBalance = null;
 
 		if (searchCriteria == null) {
 			cards = cardRepo.findAllByUserId(userId, page);
@@ -365,17 +366,17 @@ public class CardServiceImpl implements CardService {
 		return orders;
 	}
 
-	private Balance parseBalance(String searchCriteria) {
+	private CurrencyValue parseBalance(String searchCriteria) {
 		String[] values = searchCriteria.split(",");
-		Balance searchBalance = null;
+		CurrencyValue searchBalance = null;
 
 		if (values.length == 2) {
-			searchBalance = new Balance(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
+			searchBalance = new CurrencyValue(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
 		} else {
 			if(Integer.parseInt(values[0]) > 99){
-				searchBalance = new Balance(Integer.parseInt(values[0]), 0);
+				searchBalance = new CurrencyValue(Integer.parseInt(values[0]), 0);
 			} else {
-				searchBalance = new Balance(Integer.parseInt(values[0]));
+				searchBalance = new CurrencyValue(0, Integer.parseInt(values[0]));
 			}
 		}
 

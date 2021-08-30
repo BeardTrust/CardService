@@ -4,6 +4,7 @@ package com.beardtrust.webapp.cardservice.controllers;
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
+import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
 import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class provides the rest api endpoints and associated logic.
@@ -171,5 +174,19 @@ public class CardController {
 
 		log.info("Request received to view all available cards");
 		return new ResponseEntity<>(page, HttpStatus.OK);
+	}
+
+	@PreAuthorize("permitAll()")
+	@GetMapping(path = "/balance")
+	public ResponseEntity<List<CurrencyValue>> testCurrencyValue(@RequestParam(name = "dollars")int dollars,
+																 @RequestParam(name = "cents")int cents){
+		List<CurrencyValue> balanceList = new ArrayList<>();
+		balanceList.add(new CurrencyValue(100, 00));
+		balanceList.add(new CurrencyValue(100, 00));
+		CurrencyValue incomingValue = new CurrencyValue(dollars, cents);
+		balanceList.get(0).add(dollars, cents);
+		balanceList.get(1).add(incomingValue);
+
+		return new ResponseEntity<>(balanceList, HttpStatus.OK);
 	}
 }

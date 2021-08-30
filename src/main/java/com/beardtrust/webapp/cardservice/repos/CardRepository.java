@@ -1,7 +1,7 @@
 package com.beardtrust.webapp.cardservice.repos;
 
-import com.beardtrust.webapp.cardservice.entities.Balance;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
+import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * This class gives access to the cards in the database.
@@ -29,13 +28,15 @@ public interface CardRepository extends JpaRepository<CardEntity, String> {
 																										Pageable page);
 
 	Page<CardEntity> findAllByUserIdEqualsAndBalanceOrBillCycleLengthOrInterestRateIsLike(String userid,
-																						  Balance balance,
+																						  CurrencyValue balance,
 																						  int billCycleLength,
 																						  Double interestRate,
 																						  Pageable page
 																						  );
 
-	Page<CardEntity> findAllByBalanceOrInterestRateIsLike(Balance balance, Double interestRate, Pageable pageable);
+	Page<CardEntity> findAllByBalanceOrInterestRateIsLike(CurrencyValue balance,
+														  Double interestRate,
+														   Pageable pageable);
 
 	Page<CardEntity> findAllByCreateDateOrExpireDateIsLike(LocalDate createDate, LocalDate expireDate, Pageable page);
 
