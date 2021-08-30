@@ -189,4 +189,13 @@ public class CardController {
 
 		return new ResponseEntity<>(balanceList, HttpStatus.OK);
 	}
+
+	@PreAuthorize("permitAll()")
+	@GetMapping(path = "/balance/value")
+	public ResponseEntity<List<CurrencyValue>> testCurrencyValue(@RequestParam(name = "value")double value){
+		List<CurrencyValue> balanceList = new ArrayList<>();
+		balanceList.add(CurrencyValue.valueOf(value));
+		balanceList.add(CurrencyValue.valueOf(value * 33));
+		return new ResponseEntity<>(balanceList, HttpStatus.OK);
+	}
 }
