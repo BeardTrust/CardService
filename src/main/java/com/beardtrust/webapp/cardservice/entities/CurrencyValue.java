@@ -100,8 +100,9 @@ public class CurrencyValue implements Serializable {
 	 * accurate representation of the value represented by the value passed, it
 	 * is not always possible to eliminate the uncertainty of using a double
 	 * due to the fact that doubles are inherently imprecise approximations of a
-	 * specified value.  Apply extreme caution when using this method to generate
-	 * a new CurrencyValue object.
+	 * specified value. For example, 2.9199999999999998 will evaluate to 2.92, even though
+	 * 2.9199999999999997 evaluates to 2.91.  Apply extreme caution when using this method
+	 * to generate new CurrencyValue objects.
 	 *
 	 * @param value Double the double precision floating point representation of a value
 	 * @return CurrencyValue the CurrencyValue object representing the value of the value argument
@@ -119,8 +120,9 @@ public class CurrencyValue implements Serializable {
 	 * accurate representation of the value represented by the value passed, it
 	 * is not always possible to eliminate the uncertainty of using a floating point
 	 * number due to the fact that floating point numbers are inherently imprecise
-	 * approximations of the specified value.  Apply extreme caution when using this
-	 * method to generate a new CurrencyValue object.
+	 * approximations of the specified value.  For example, 2.91999999 will evaluate
+	 * to 2.92, even though 2.91999995 evaluates to 2.91.  Apply extreme caution when
+	 * using this method to generate new CurrencyValue objects.
 	 *
 	 * @param value Float the floating point representation of a value
 	 * @return CurrencyValue the CurrencyValue object representing the value of the value argument

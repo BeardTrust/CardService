@@ -175,27 +175,4 @@ public class CardController {
 		log.info("Request received to view all available cards");
 		return new ResponseEntity<>(page, HttpStatus.OK);
 	}
-
-	@PreAuthorize("permitAll()")
-	@GetMapping(path = "/balance")
-	public ResponseEntity<List<CurrencyValue>> testCurrencyValue(@RequestParam(name = "dollars")int dollars,
-																 @RequestParam(name = "cents")int cents){
-		List<CurrencyValue> balanceList = new ArrayList<>();
-		balanceList.add(new CurrencyValue(100, 00));
-		balanceList.add(new CurrencyValue(100, 00));
-		CurrencyValue incomingValue = new CurrencyValue(dollars, cents);
-		balanceList.get(0).add(dollars, cents);
-		balanceList.get(1).add(incomingValue);
-
-		return new ResponseEntity<>(balanceList, HttpStatus.OK);
-	}
-
-	@PreAuthorize("permitAll()")
-	@GetMapping(path = "/balance/value")
-	public ResponseEntity<List<CurrencyValue>> testCurrencyValue(@RequestParam(name = "value")double value){
-		List<CurrencyValue> balanceList = new ArrayList<>();
-		balanceList.add(CurrencyValue.valueOf(value));
-		balanceList.add(CurrencyValue.valueOf(value * 33));
-		return new ResponseEntity<>(balanceList, HttpStatus.OK);
-	}
 }
