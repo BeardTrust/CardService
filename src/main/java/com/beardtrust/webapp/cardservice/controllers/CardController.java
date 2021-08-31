@@ -4,6 +4,7 @@ package com.beardtrust.webapp.cardservice.controllers;
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
+import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
 import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class provides the rest api endpoints and associated logic.

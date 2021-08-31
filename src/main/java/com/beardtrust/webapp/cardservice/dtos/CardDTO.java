@@ -3,7 +3,7 @@ package com.beardtrust.webapp.cardservice.dtos;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-import com.beardtrust.webapp.cardservice.entities.Balance;
+import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
 import lombok.Data;
 
 /**
@@ -18,7 +18,7 @@ public class CardDTO implements Serializable{
 	private String cardId;
 	private String userId;
 	private CardTypeDTO cardType;
-	private Balance balance;
+	private CurrencyValue balance;
 	private String cardNumber;
 	private Double interestRate;
 	private LocalDate createDate;

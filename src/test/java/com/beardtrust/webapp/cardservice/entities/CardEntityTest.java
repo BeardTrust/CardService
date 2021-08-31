@@ -13,7 +13,7 @@ public class CardEntityTest {
 	public void testConstructor() {
 		CardEntity actualCardEntity = new CardEntity();
 		actualCardEntity.setActiveStatus(true);
-		actualCardEntity.setBalance(new Balance(10, 0));
+		actualCardEntity.setBalance(new CurrencyValue(10, 0));
 		actualCardEntity.setBillCycleLength(3);
 		actualCardEntity.setCardId("42");
 		actualCardEntity.setCardNumber("Card Number");
