@@ -1,13 +1,15 @@
 package com.beardtrust.webapp.cardservice.repos;
 
-import java.util.Optional;
-
-import javax.persistence.Entity;
-
+import com.beardtrust.webapp.cardservice.entities.UserEntity;
 import org.springframework.data.repository.Repository;
 
-import com.beardtrust.webapp.cardservice.entities.UserEntity;
+import java.util.Optional;
 
+/**
+ * The interface Authorization repository.
+ *
+ * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
+ */
 @org.springframework.stereotype.Repository
 public interface AuthorizationRepository extends Repository<UserEntity, String> {
 	/**
@@ -16,5 +18,5 @@ public interface AuthorizationRepository extends Repository<UserEntity, String> 
 	 * @param id the id
 	 * @return the optional
 	 */
-	Optional<UserEntity> findByUserId(String id);
+	Optional<UserEntity> findById(String id);
 }
