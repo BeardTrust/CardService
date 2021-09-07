@@ -1,13 +1,14 @@
 package com.beardtrust.webapp.cardservice.entities;
 
-import javax.persistence.Column;
+import com.beardtrust.webapp.cardservice.entities.FinancialAsset;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -20,9 +21,10 @@ import java.util.UUID;
 public class UserEntity implements Serializable {
 	@Id
 	@Column(unique = true)
-	private String userId;
+	private String id;
 	@Column(unique = true)
 	private String username;
+	@JsonBackReference
 	private String password;
 	@Column(unique = true)
 	private String email;
@@ -33,12 +35,15 @@ public class UserEntity implements Serializable {
 	@Column(name = "dob")
 	private LocalDate dateOfBirth;
 	private String role;
+	@JsonIgnore
+	@OneToMany(mappedBy = "user")
+	private Set<FinancialAsset> assets;
 
 	/**
 	 * Instantiates a new UserEntity.
 	 */
 	public UserEntity() {
-		this.userId = UUID.randomUUID().toString();
+		this.id = UUID.randomUUID().toString();
 	}
 
 	/**
@@ -46,8 +51,8 @@ public class UserEntity implements Serializable {
 	 *
 	 * @return the user id
 	 */
-	public String getUserId() {
-		return userId;
+	public String getId() {
+		return id;
 	}
 
 	/**
@@ -55,8 +60,8 @@ public class UserEntity implements Serializable {
 	 *
 	 * @param userId the user id
 	 */
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public void setId(String userId) {
+		this.id = userId;
 	}
 
 	/**
@@ -208,18 +213,18 @@ public class UserEntity implements Serializable {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		UserEntity that = (UserEntity) o;
-		return Objects.equals(userId, that.userId) && Objects.equals(username, that.username) && Objects.equals(password, that.password) && Objects.equals(email, that.email) && Objects.equals(phone, that.phone) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(dateOfBirth, that.dateOfBirth) && Objects.equals(role, that.role);
+		return Objects.equals(id, that.id) && Objects.equals(username, that.username) && Objects.equals(password, that.password) && Objects.equals(email, that.email) && Objects.equals(phone, that.phone) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(dateOfBirth, that.dateOfBirth) && Objects.equals(role, that.role);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(userId, username, password, email, phone, firstName, lastName, dateOfBirth, role);
+		return Objects.hash(id, username, password, email, phone, firstName, lastName, dateOfBirth, role);
 	}
 
 	@Override
 	public String toString() {
 		return "UserEntity{" +
-				"userId='" + userId + '\'' +
+				"userId='" + id + '\'' +
 				", username='" + username + '\'' +
 				", password='" + password + '\'' +
 				", email='" + email + '\'' +
