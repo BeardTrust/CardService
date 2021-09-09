@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,32 +17,34 @@ public class CardEntityTest {
 		actualCardEntity.setActiveStatus(true);
 		actualCardEntity.setBalance(new CurrencyValue(10, 0));
 		actualCardEntity.setBillCycleLength(3);
-		actualCardEntity.setCardId("42");
+		actualCardEntity.setId("42");
 		actualCardEntity.setCardNumber("Card Number");
 		CardTypeEntity cardTypeEntity = new CardTypeEntity();
 		cardTypeEntity.setBaseInterestRate(10.0);
 		cardTypeEntity.setId("42");
 		cardTypeEntity.setTypeName("Type Name");
 		actualCardEntity.setCardType(cardTypeEntity);
-		LocalDate ofEpochDayResult = LocalDate.ofEpochDay(1L);
+		LocalDateTime ofEpochDayResult = LocalDateTime.of(LocalDate.ofEpochDay(1L), LocalTime.of(0,0,0));
 		actualCardEntity.setCreateDate(ofEpochDayResult);
-		LocalDate ofEpochDayResult1 = LocalDate.ofEpochDay(1L);
+		LocalDateTime ofEpochDayResult1 = LocalDateTime.of(LocalDate.ofEpochDay(1L), LocalTime.of(0,0,0));
 		actualCardEntity.setExpireDate(ofEpochDayResult1);
 		actualCardEntity.setInterestRate(10.0);
 		actualCardEntity.setNickname("Nickname");
-		actualCardEntity.setUserId("42");
-		assertTrue(actualCardEntity.getActiveStatus());
+		UserEntity user = new UserEntity();
+		user.setUserId("42");
+		actualCardEntity.setUser(user);
+		assertTrue(actualCardEntity.isActiveStatus());
 		assertEquals("10.00", actualCardEntity.getBalance().toString());
-		assertEquals(3, actualCardEntity.getBillCycleLength().intValue());
-		assertEquals("42", actualCardEntity.getCardId());
+		assertEquals(3, actualCardEntity.getBillCycleLength());
+		assertEquals("42", actualCardEntity.getId());
 		assertEquals("Card Number", actualCardEntity.getCardNumber());
 		assertSame(cardTypeEntity, actualCardEntity.getCardType());
 		assertSame(ofEpochDayResult, actualCardEntity.getCreateDate());
 		assertSame(ofEpochDayResult1, actualCardEntity.getExpireDate());
-		assertEquals(10.0, actualCardEntity.getInterestRate().doubleValue());
+		assertEquals(10.0, actualCardEntity.getInterestRate());
 		assertEquals("Nickname", actualCardEntity.getNickname());
-		assertEquals("42", actualCardEntity.getUserId());
-		assertEquals("CardEntity [cardId=42, userId=42, cardType=Type Name, balance=10.0, cardNumber=Card Number,"
+		assertEquals("42", actualCardEntity.getUser().getUserId());
+		assertEquals("CardEntity [id=42, userId=42, cardType=Type Name, balance=10.0, cardNumber=Card Number,"
 				+ " interestRate=10.0, createDate=1970-01-02, nickname=Nickname, billCycleLength=3, activeStatus=true,"
 				+ " expireDate=1970-01-02]", actualCardEntity.toString());
 	}
