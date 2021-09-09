@@ -43,13 +43,20 @@ public class CardController {
 		this.cardService = cardService;
 	}
 
-	@PreAuthorize("permitAll()")
+	/**
+	 * This method is used by administrators to register a card for a client of BeardTrust.
+	 *
+	 * @param userId	String		the string representation of the user's unique user id
+	 * @param cardRegistration		CardRegistrationModel		the data required to register the card
+	 * @return	CardSignUpResponseModel		the card service's response to the registration request
+	 */
 	@PostMapping(path = "/register/{id}")
+	@PreAuthorize("hasAuthority('admin')")
 	@Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<CardSignUpResponseModel> registerCard(@PathVariable("id") String userId,
 																@RequestBody CardRegistrationModel cardRegistration) {
-		ResponseEntity<CardSignUpResponseModel> response = null;
+		ResponseEntity<CardSignUpResponseModel> response;
 		System.out.println(userId);
 		System.out.println("Signup Request: " + cardRegistration);
 		response = new ResponseEntity<>(cardService.registerCard(userId, cardRegistration), HttpStatus.CREATED);
@@ -57,13 +64,13 @@ public class CardController {
 	}
 
 	@GetMapping()
-	//@PreAuthorize("hasAuthority('admin')")
+	@PreAuthorize("hasAuthority('admin')")
 	public ResponseEntity<Page<CardDTO>> displayAllCards(@RequestParam(name = "page", defaultValue = "0") int pageNumber,
 														 @RequestParam(name = "size", defaultValue = "10") int pageSize,
 														 @RequestParam(name = "sortBy",
 																 defaultValue = "id,asc") String[] sortBy,
 														 @RequestParam(name = "search", required = false) String searchCriteria) {
-		ResponseEntity<Page<CardDTO>> response = null;
+		ResponseEntity<Page<CardDTO>> response;
 
 		response = new ResponseEntity<>(cardService.getAll(pageNumber, pageSize, sortBy, searchCriteria),
 				HttpStatus.OK);
@@ -72,63 +79,60 @@ public class CardController {
 	}
 
 	@GetMapping("/{id}")
-	//@PreAuthorize("hasAuthority('admin')")
-	@PreAuthorize("permitAll()")
+	@PreAuthorize("hasAuthority('admin')")
 	public CardEntity displayCardById(@PathVariable String id) {
 		return cardService.getById(id);
 	}
 
 	@PutMapping()
-	@PreAuthorize("permitAll()")
-	//@PreAuthorize("hasAuthority('admin')")
+	@PreAuthorize("hasAuthority('admin')")
 	public void updateCard(@RequestBody CardUpdateModel cardUpdateModel) {
 		System.out.println("updateCard");
 		cardService.update(cardUpdateModel);
 	}
 
 	@DeleteMapping("/{id}")
-	@PreAuthorize("permitAll()")
-	//@PreAuthorize("hasAuthority('admin')")
+	@PreAuthorize("hasAuthority('admin')")
 	public void deactivateCard(@PathVariable String id) {
 		cardService.deactivateById(id);
 	}
 
 
 	/**
-	 * This method receives a CardDTO object and invokes the card service to sign the specified user
-	 * up for the specified card.
+	 * This method receives a CardSignUpRequestModel object from a client of BeardTrust seeking to apply for a new
+	 * credit card and invokes the card service to sign the user up for the specified card.
 	 *
 	 * @param userId        String the user's unique id
 	 * @param signUpRequest CardSignUpRequestModel object containing application data
 	 * @return ResponseEntity<CardDTO> the response from the server including the new card's dto
 	 */
-	@PreAuthorize("permitAll()")
 	@PostMapping(path = "/{id}")
+	@PreAuthorize("principal == #userId")
 	@Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<CardSignUpResponseModel> applyForCard(@PathVariable("id") String userId,
 																@RequestBody CardSignUpRequestModel signUpRequest) {
-		ResponseEntity<CardSignUpResponseModel> response = null;
+		ResponseEntity<CardSignUpResponseModel> response;
 		log.info("New card application for " + userId);
 		response = new ResponseEntity<>(cardService.applyForCard(userId, signUpRequest), HttpStatus.CREATED);
 		return response;
 	}
 
 	/**
-	 * this method retrieves the details of a single card associated with a specific
+	 * This method retrieves the details of a single card associated with a specific
 	 * user id from the database.
 	 *
 	 * @param userId String the user id that must be associated with the card
 	 * @param id String the card id to search for
 	 * @return ResponseEntity<CardDTO> the http response entity with the card details
 	 */
-	@PreAuthorize("permitAll()")
-	@GetMapping(path = "/{id}/{id}")
+	@PreAuthorize("hasAuthority('admin') or principal == #userId")
+	@GetMapping(path = "/{userId}/{cardId}")
 	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<CardDTO> getCardStatus(@PathVariable("id") String userId,
-												 @PathVariable("id") String id) {
-		ResponseEntity<CardDTO> response = null;
-		log.info("Card status report for " + id);
+	public ResponseEntity<CardDTO> getCardStatus(@PathVariable(value = "userId") String userId,
+												 @PathVariable(value = "cardId") String id) {
+		ResponseEntity<CardDTO> response;
+		log.info("Card status request for user " + userId + "'s card with id " + id);
 		CardDTO status = cardService.getStatus(userId, id);
 		response = new ResponseEntity<>(status, HttpStatus.OK);
 		return response;
@@ -149,9 +153,9 @@ public class CardController {
 														@RequestParam(name = "sortBy",
 																defaultValue = "id,asc") String[] sortBy,
 														@RequestParam(name = "search", required = false) String searchCriteria) {
-		ResponseEntity<Page<CardDTO>> response = null;
+		ResponseEntity<Page<CardDTO>> response;
 		log.info("Card list requested for " + userId);
-		Page<CardDTO> cards = null;
+		Page<CardDTO> cards;
 		cards = cardService.getCardsByUser(userId, pageNumber, pageSize, sortBy, searchCriteria);
 		response = new ResponseEntity<>(cards, HttpStatus.OK);
 		return response;
@@ -163,7 +167,7 @@ public class CardController {
 	 *
 	 * @return ResponseEntity<List < CardTypeDTO>> list of all currently available card types
 	 */
-	@PreAuthorize("permitAll()")
+	@PreAuthorize("hasAuthority('user')")
 	@GetMapping(path = "/available")
 	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<Page<CardTypeDTO>> getAvailableCardTypes(@RequestParam(name = "page", defaultValue = "0") int pageNumber,

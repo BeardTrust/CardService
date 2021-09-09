@@ -30,11 +30,11 @@ public interface CardRepository extends JpaRepository<CardEntity, String> {
 																										 String nickname,
 																										 Pageable page);
 
-	Page<CardEntity> findAllByUser_UserIdEqualsAndBalanceOrBillCycleOrInterestRateEquals(String userid,
-																						 CurrencyValue balance,
-																						 int billCycleLength,
-																						 Double interestRate,
-																						 Pageable page
+	Page<CardEntity> findAllByUser_UserIdEqualsAndBalanceOrBillCycleLengthOrInterestRateEquals(String userid,
+																							   CurrencyValue balance,
+																							   int billCycleLength,
+																							   Double interestRate,
+																							   Pageable page
 																						  );
 
 	Page<CardEntity> findAllByBalanceOrInterestRateEquals(CurrencyValue balance,
@@ -44,10 +44,10 @@ public interface CardRepository extends JpaRepository<CardEntity, String> {
 	Page<CardEntity> findAllByCreateDateOrExpireDateEquals(LocalDateTime createDate, LocalDateTime expireDate, Pageable pageable);
 
 	/**
-	 * This method accepts a user id as an argument and returns the list of
-	 * all cards associated with that user id as found in the database.
+	 * This method accepts a user entity as an argument and returns the list of
+	 * all cards associated with that user as found in the database.
 	 *
-	 * @param userId String the user id to search for
+	 * @param user UserEntity the user id to search for
 	 * @return List<CardEntity> the list of cards associated with the user id
 	 */
 	Page<CardEntity> findAllByUser(UserEntity user, Pageable pageable);

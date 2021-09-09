@@ -1,7 +1,6 @@
 package com.beardtrust.webapp.cardservice.dtos;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
@@ -15,9 +14,9 @@ import lombok.Data;
  */
 @Data
 public class CardDTO implements Serializable{
-	
+
+	private static final long serialVersionUID = 4819495263235490837L;
 	private String id;
-	private String user;
 	private CardTypeDTO cardType;
 	private CurrencyValue balance;
 	private String cardNumber;

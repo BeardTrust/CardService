@@ -21,7 +21,7 @@ public class CardEntity extends FinancialAsset {
 	@ManyToOne
 	private CardTypeEntity cardType;
 	private LocalDateTime expireDate;
-	private int billCycle;
+	private int billCycleLength;
 	private String cardNumber;
 
 	public CardEntity() {
@@ -60,12 +60,12 @@ public class CardEntity extends FinancialAsset {
 		this.expireDate = expireDate;
 	}
 
-	public int getBillCycle() {
-		return billCycle;
+	public int getBillCycleLength() {
+		return billCycleLength;
 	}
 
-	public void setBillCycle(int billCycle) {
-		this.billCycle = billCycle;
+	public void setBillCycleLength(int billCycle) {
+		this.billCycleLength = billCycle;
 	}
 
 	public String getCardNumber() {
@@ -81,12 +81,12 @@ public class CardEntity extends FinancialAsset {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		CardEntity that = (CardEntity) o;
-		return Double.compare(that.interestRate, interestRate) == 0 && billCycle == that.billCycle && Objects.equals(nickname, that.nickname) && Objects.equals(cardType, that.cardType) && Objects.equals(expireDate, that.expireDate) && Objects.equals(cardNumber, that.cardNumber);
+		return Double.compare(that.interestRate, interestRate) == 0 && billCycleLength == that.billCycleLength && Objects.equals(nickname, that.nickname) && Objects.equals(cardType, that.cardType) && Objects.equals(expireDate, that.expireDate) && Objects.equals(cardNumber, that.cardNumber);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(nickname, interestRate, cardType, expireDate, billCycle, cardNumber);
+		return Objects.hash(nickname, interestRate, cardType, expireDate, billCycleLength, cardNumber);
 	}
 
 	@Override

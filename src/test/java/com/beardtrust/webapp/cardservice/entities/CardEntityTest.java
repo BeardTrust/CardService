@@ -16,7 +16,7 @@ public class CardEntityTest {
 		CardEntity actualCardEntity = new CardEntity();
 		actualCardEntity.setActiveStatus(true);
 		actualCardEntity.setBalance(new CurrencyValue(10, 0));
-		actualCardEntity.setBillCycle(3);
+		actualCardEntity.setBillCycleLength(3);
 		actualCardEntity.setId("42");
 		actualCardEntity.setCardNumber("Card Number");
 		CardTypeEntity cardTypeEntity = new CardTypeEntity();
@@ -35,7 +35,7 @@ public class CardEntityTest {
 		actualCardEntity.setUser(user);
 		assertTrue(actualCardEntity.isActiveStatus());
 		assertEquals("10.00", actualCardEntity.getBalance().toString());
-		assertEquals(3, actualCardEntity.getBillCycle());
+		assertEquals(3, actualCardEntity.getBillCycleLength());
 		assertEquals("42", actualCardEntity.getId());
 		assertEquals("Card Number", actualCardEntity.getCardNumber());
 		assertSame(cardTypeEntity, actualCardEntity.getCardType());

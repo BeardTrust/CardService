@@ -1,8 +1,5 @@
 package com.beardtrust.webapp.cardservice.models;
 
-import java.time.LocalDate;
-
-
 import javax.validation.constraints.NotBlank;
 
 import lombok.Data;
@@ -20,6 +17,4 @@ public class CardRegistrationModel {
 	private String nickname;
 	@NotBlank(message = "A bill cycle length must be provided")
 	private Integer billCycleLength;
-	
-	
 }
