@@ -9,5 +9,5 @@ import lombok.Data;
  */
 @Data
 public class CardSignUpResponseModel {
-	private String cardId;
+	private String id;
 }

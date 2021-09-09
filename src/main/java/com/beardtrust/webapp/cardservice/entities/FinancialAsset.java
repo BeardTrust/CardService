@@ -27,6 +27,8 @@ public abstract class FinancialAsset implements Comparable<FinancialAsset>, Seri
 	@Id
 	private String id;
 	@ManyToOne
+	@JoinTable(name = "users")
+	@JoinColumn(name = "user_id")
 	private UserEntity user;
 	private boolean activeStatus;
 	@Embedded

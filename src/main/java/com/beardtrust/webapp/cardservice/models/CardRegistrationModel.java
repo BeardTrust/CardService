@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class CardRegistrationModel {
 	
-	private String userId;
+	private String user;
 	@NotBlank(message = "A card type must be provided")
 	private String cardType;
 	@NotBlank(message = "A balance must be provided")

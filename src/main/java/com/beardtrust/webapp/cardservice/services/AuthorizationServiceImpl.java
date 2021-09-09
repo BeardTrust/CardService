@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.beardtrust.webapp.cardservice.dtos.UserDTO;
 import com.beardtrust.webapp.cardservice.entities.UserEntity;
 import com.beardtrust.webapp.cardservice.repos.AuthorizationRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class AuthorizationServiceImpl implements AuthorizationService {
 	
 	AuthorizationRepository authorizationRepository;

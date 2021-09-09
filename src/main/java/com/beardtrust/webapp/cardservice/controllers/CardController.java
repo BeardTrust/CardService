@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.Consumes;
@@ -60,7 +61,7 @@ public class CardController {
 	public ResponseEntity<Page<CardDTO>> displayAllCards(@RequestParam(name = "page", defaultValue = "0") int pageNumber,
 														 @RequestParam(name = "size", defaultValue = "10") int pageSize,
 														 @RequestParam(name = "sortBy",
-																 defaultValue = "cardId,asc") String[] sortBy,
+																 defaultValue = "id,asc") String[] sortBy,
 														 @RequestParam(name = "search", required = false) String searchCriteria) {
 		ResponseEntity<Page<CardDTO>> response = null;
 
@@ -118,17 +119,17 @@ public class CardController {
 	 * user id from the database.
 	 *
 	 * @param userId String the user id that must be associated with the card
-	 * @param cardId String the card id to search for
+	 * @param id String the card id to search for
 	 * @return ResponseEntity<CardDTO> the http response entity with the card details
 	 */
 	@PreAuthorize("permitAll()")
-	@GetMapping(path = "/{id}/{cardId}")
+	@GetMapping(path = "/{id}/{id}")
 	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<CardDTO> getCardStatus(@PathVariable("id") String userId,
-												 @PathVariable("cardId") String cardId) {
+												 @PathVariable("id") String id) {
 		ResponseEntity<CardDTO> response = null;
-		log.info("Card status report for " + cardId);
-		CardDTO status = cardService.getStatus(userId, cardId);
+		log.info("Card status report for " + id);
+		CardDTO status = cardService.getStatus(userId, id);
 		response = new ResponseEntity<>(status, HttpStatus.OK);
 		return response;
 	}
@@ -139,14 +140,14 @@ public class CardController {
 	 * @param userId String the user id to search for
 	 * @return ResponseEntity<List < CardDTO>> the http response with the list of all associated cards
 	 */
-	@PreAuthorize("permitAll()")
+	@PreAuthorize("hasAuthority('admin') or principal == #userId")
 	@GetMapping(path = "/{id}/all")
 	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<Page<CardDTO>> getCardsByUser(@PathVariable("id") String userId,
 														@RequestParam(name = "page", defaultValue = "0") int pageNumber,
 														@RequestParam(name = "size", defaultValue = "10") int pageSize,
 														@RequestParam(name = "sortBy",
-																defaultValue = "cardId,asc") String[] sortBy,
+																defaultValue = "id,asc") String[] sortBy,
 														@RequestParam(name = "search", required = false) String searchCriteria) {
 		ResponseEntity<Page<CardDTO>> response = null;
 		log.info("Card list requested for " + userId);

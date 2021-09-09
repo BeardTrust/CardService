@@ -24,3 +24,11 @@ spring:
     username: basileios
     password: EBzrA8x6OcRfZL00dzG9uND6yXANpMetzr7K
     driver-class-name: org.mariadb.jdbc.Driver
+authorization:
+  token:
+    header:
+      name: Authorization
+      prefix: Bearer
+token:
+  secret: aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj04WnEzS0NCZWQ1UQo=
+  expiration: 864000000

@@ -5,12 +5,14 @@ import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
 import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
+import com.beardtrust.webapp.cardservice.entities.UserEntity;
 import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
 import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import com.beardtrust.webapp.cardservice.repos.CardRepository;
 import com.beardtrust.webapp.cardservice.repos.CardTypeRepository;
+import com.beardtrust.webapp.cardservice.repos.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.GenericValidator;
 import org.modelmapper.ModelMapper;
@@ -23,7 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.apache.commons.lang.math.NumberUtils.isNumber;
@@ -39,11 +41,13 @@ import static org.apache.commons.lang.math.NumberUtils.isNumber;
 public class CardServiceImpl implements CardService {
 	private final CardRepository cardRepo;
 	private final CardTypeRepository cardTypeRepo;
+	private final UserRepository userRepository;
 
 	@Autowired
-	public CardServiceImpl(CardRepository cardRepo, CardTypeRepository cardTypeRepo) {
+	public CardServiceImpl(CardRepository cardRepo, CardTypeRepository cardTypeRepo, UserRepository userRepository) {
 		this.cardRepo = cardRepo;
 		this.cardTypeRepo = cardTypeRepo;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -71,11 +75,11 @@ public class CardServiceImpl implements CardService {
 					searchBalance.setCents(Integer.parseInt(values[0]));
 				}
 			} else if (GenericValidator.isDate(search, "yyyy-MM-dd", true)) {
-				LocalDate dateSearch = LocalDate.parse(search);
-				entities = cardRepo.findAllByCreateDateOrExpireDateIsLike(dateSearch, dateSearch, page);
+				LocalDateTime dateSearch = LocalDateTime.parse(search);
+				entities = cardRepo.findAllByCreateDateOrExpireDateEquals(dateSearch, dateSearch, page);
 			} else {
 				entities =
-						cardRepo.findAllByCardIdOrUserIdOrCardNumberOrCardType_TypeNameOrNicknameContainsIgnoreCase(search,
+						cardRepo.findAllByIdOrUser_UserIdOrCardNumberOrCardType_TypeNameOrNicknameContainsIgnoreCase(search,
 								search, search, search, search, page);
 			}
 		}
@@ -124,22 +128,22 @@ public class CardServiceImpl implements CardService {
 	@Transactional
 	public void update(CardUpdateModel cardUpdateModel) {
 		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardUpdateModel.getCardType());
-
-		Optional<CardEntity> card = cardRepo.findById(cardUpdateModel.getCardId());
-		card.get().setCardId(cardUpdateModel.getCardId());
-		card.get().setUserId(cardUpdateModel.getUserId());
+		Optional<UserEntity> user = userRepository.findById(cardUpdateModel.getUser());
+		Optional<CardEntity> card = cardRepo.findById(cardUpdateModel.getId());
+		card.get().setId(cardUpdateModel.getId());
+		card.get().setUser(user.orElse(null));
 		card.get().setCardType(cardType.get());
 		card.get().setBalance(cardUpdateModel.getBalance());
 		card.get().setCardNumber(cardUpdateModel.getCardNumber());
 		card.get().setInterestRate(cardUpdateModel.getInterestRate());
 		card.get().setCreateDate(cardUpdateModel.getCreateDate());
 		card.get().setNickname(cardUpdateModel.getNickname());
-		card.get().setBillCycleLength(cardUpdateModel.getBillCycleLength());
+		card.get().setBillCycle(cardUpdateModel.getBillCycleLength());
 		card.get().setExpireDate(cardUpdateModel.getExpireDate());
 		System.out.println(card);
 		try {
 			CardEntity result = cardRepo.save(card.get());
-			//log.info("Card id - " + card.getCardId() + " has been saved");
+			//log.info("Card id - " + card.getid() + " has been saved");
 		} catch (Exception e) {
 			System.out.println("Could not save card");
 		}
@@ -152,22 +156,23 @@ public class CardServiceImpl implements CardService {
 		CardEntity card = new CardEntity();
 
 		if (cardType.isPresent()) {
+			Optional<UserEntity> user = userRepository.findById(cardRegistration.getUser());
 			card.setBalance(new CurrencyValue(0, 0));
 			card.setCardType(cardType.get());
 			card.setInterestRate(cardType.get().getBaseInterestRate() + cardRegistration.getInterestRate());
-			card.setUserId(userId);
+			card.setUser(user.orElse(null));
 			card.setCardNumber(generateCardNumber());
-			card.setCardId(UUID.randomUUID().toString());
+			card.setId(UUID.randomUUID().toString());
 			card.setActiveStatus(true);
-			card.setBillCycleLength(cardRegistration.getBillCycleLength());
-			card.setCreateDate(LocalDate.now());
+			card.setBillCycle(cardRegistration.getBillCycleLength());
+			card.setCreateDate(LocalDateTime.now());
 			card.setExpireDate(card.getCreateDate().plusYears(3));
 			card.setNickname(cardRegistration.getNickname());
 			card = cardRepo.save(card);
 		}
 
 		CardSignUpResponseModel response = new CardSignUpResponseModel();
-		response.setCardId(card.getCardId());
+		response.setId(card.getId());
 		return response;
 	}
 
@@ -180,15 +185,16 @@ public class CardServiceImpl implements CardService {
 		// Todo: Implement update user details logic
 
 		if (cardType.isPresent()) {
+			Optional<UserEntity> user = userRepository.findById(userId);
 			card.setBalance(new CurrencyValue(0, 0));
 			card.setCardType(cardType.get());
 			card.setInterestRate(cardType.get().getBaseInterestRate());
-			card.setUserId(userId);
+			card.setUser(user.orElse(null));
 			card.setCardNumber(generateCardNumber());
-			card.setCardId(UUID.randomUUID().toString());
+			card.setId(UUID.randomUUID().toString());
 			card.setActiveStatus(true);
-			card.setBillCycleLength(30);
-			card.setCreateDate(LocalDate.now());
+			card.setBillCycle(30);
+			card.setCreateDate(LocalDateTime.now());
 			card.setExpireDate(card.getCreateDate().plusYears(3));
 			if (signUpRequest.getNickname().length() > 0) {
 				card.setNickname(signUpRequest.getNickname());
@@ -197,26 +203,26 @@ public class CardServiceImpl implements CardService {
 			}
 
 			card = cardRepo.save(card);
-			log.info("New card added to database " + card.getCardId());
+			log.info("New card added to database " + card.getId());
 		} else {
 			log.error("Card type " + signUpRequest.getCardType() + " is not a valid card type");
 			card = new CardEntity();
 		}
 
 		CardSignUpResponseModel response = new CardSignUpResponseModel();
-		response.setCardId(card.getCardId());
+		response.setId(card.getId());
 		return response;
 	}
 
 	@Override
 	@Transactional
-	public CardDTO getStatus(String userId, String cardId) {
+	public CardDTO getStatus(String userId, String id) {
 		log.info("Card status request for " + userId);
 
 		CardDTO status = null;
-		Optional<CardEntity> card = cardRepo.findById(cardId);
+		Optional<CardEntity> card = cardRepo.findById(id);
 		if (card.isPresent()) {
-			if (card.get().getUserId().equals(userId)) {
+			if (card.get().getUser().equals(userId)) {
 				ModelMapper modelMapper = new ModelMapper();
 				modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 				status = modelMapper.map(card.get(), CardDTO.class);
@@ -238,20 +244,29 @@ public class CardServiceImpl implements CardService {
 		CurrencyValue searchBalance = null;
 
 		if (searchCriteria == null) {
-			cards = cardRepo.findAllByUserId(userId, page);
+			Optional<UserEntity> user = userRepository.findById(userId);
+			if(user.isPresent()){
+				cards = cardRepo.findAllByUser(user.get(), page);
+				for(CardEntity card : cards){
+					System.out.println(card);
+				}
+			} else{
+				log.error("No user found to locate cards by user id");
+			}
+
 		} else if (isNumber(searchCriteria)) {
 				searchBalance = parseBalance(searchCriteria);
 
-				cards = cardRepo.findAllByUserIdEqualsAndBalanceOrBillCycleLengthOrInterestRateIsLike(userId,
+				cards = cardRepo.findAllByUser_UserIdEqualsAndBalanceOrBillCycleOrInterestRateEquals(userId,
 				searchBalance, Integer.parseInt(searchCriteria), Double.parseDouble(searchCriteria), page);
 
 			} else if (GenericValidator.isDate(searchCriteria, "yyyy-MM-dd", true)) {
-				LocalDate dateSearch = LocalDate.parse(searchCriteria);
-				cards = cardRepo.findAllByUserIdEqualsAndCreateDateOrExpireDateIsLike(userId, dateSearch, dateSearch,
+				LocalDateTime dateSearch = LocalDateTime.parse(searchCriteria);
+				cards = cardRepo.findAllByUser_UserIdEqualsAndCreateDateOrExpireDateEquals(userId, dateSearch, dateSearch,
 						page);
 			} else {
 				cards =
-						cardRepo.findAllByUserIdEqualsAndCardIdOrNicknameOrCardType_TypeNameContainsIgnoreCase(userId,
+						cardRepo.findAllByUser_UserIdEqualsAndIdOrNicknameOrCardType_TypeNameContainsIgnoreCase(userId,
 								searchCriteria, searchCriteria, searchCriteria, page);
 			}
 

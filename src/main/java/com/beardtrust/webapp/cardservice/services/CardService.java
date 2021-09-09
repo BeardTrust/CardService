@@ -39,10 +39,10 @@ public interface CardService {
 	 * card status information to an authorized party.
 	 *
 	 * @param userId String the user ID of the card owner
-	 * @param cardId String the card ID of the desired card
+	 * @param id String the card ID of the desired card
 	 * @return CardDTO the data transfer object containing required card information
 	 */
-	CardDTO getStatus(String userId, String cardId);
+	CardDTO getStatus(String userId, String id);
 
 	/**
 	 * This method receives a user's id as a string parameter and uses it to retrieve

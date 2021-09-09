@@ -17,36 +17,36 @@ public class CardSignUpResponseModelTest {
 		CardSignUpResponseModel cardSignUpResponseModel = new CardSignUpResponseModel();
 
 		CardSignUpResponseModel cardSignUpResponseModel1 = new CardSignUpResponseModel();
-		cardSignUpResponseModel1.setCardId("42");
+		cardSignUpResponseModel1.setId("42");
 		assertTrue(cardSignUpResponseModel.canEqual(cardSignUpResponseModel1));
 	}
 
 	@Test
 	public void testConstructor() {
 		CardSignUpResponseModel actualCardSignUpResponseModel = new CardSignUpResponseModel();
-		actualCardSignUpResponseModel.setCardId("42");
-		assertEquals("42", actualCardSignUpResponseModel.getCardId());
-		assertEquals("CardSignUpResponseModel(cardId=42)", actualCardSignUpResponseModel.toString());
+		actualCardSignUpResponseModel.setId("42");
+		assertEquals("42", actualCardSignUpResponseModel.getId());
+		assertEquals("CardSignUpResponseModel(id=42)", actualCardSignUpResponseModel.toString());
 	}
 
 	@Test
 	public void testEquals() {
 		CardSignUpResponseModel cardSignUpResponseModel = new CardSignUpResponseModel();
-		cardSignUpResponseModel.setCardId("42");
+		cardSignUpResponseModel.setId("42");
 		assertFalse(cardSignUpResponseModel.equals(null));
 	}
 
 	@Test
 	public void testEquals2() {
 		CardSignUpResponseModel cardSignUpResponseModel = new CardSignUpResponseModel();
-		cardSignUpResponseModel.setCardId("42");
+		cardSignUpResponseModel.setId("42");
 		assertFalse(cardSignUpResponseModel.equals("Different type to CardSignUpResponseModel"));
 	}
 
 	@Test
 	public void testEquals3() {
 		CardSignUpResponseModel cardSignUpResponseModel = new CardSignUpResponseModel();
-		cardSignUpResponseModel.setCardId("42");
+		cardSignUpResponseModel.setId("42");
 		assertTrue(cardSignUpResponseModel.equals(cardSignUpResponseModel));
 		int expectedHashCodeResult = cardSignUpResponseModel.hashCode();
 		assertEquals(expectedHashCodeResult, cardSignUpResponseModel.hashCode());
@@ -55,10 +55,10 @@ public class CardSignUpResponseModelTest {
 	@Test
 	public void testEquals4() {
 		CardSignUpResponseModel cardSignUpResponseModel = new CardSignUpResponseModel();
-		cardSignUpResponseModel.setCardId("42");
+		cardSignUpResponseModel.setId("42");
 
 		CardSignUpResponseModel cardSignUpResponseModel1 = new CardSignUpResponseModel();
-		cardSignUpResponseModel1.setCardId("42");
+		cardSignUpResponseModel1.setId("42");
 		assertTrue(cardSignUpResponseModel.equals(cardSignUpResponseModel1));
 		int expectedHashCodeResult = cardSignUpResponseModel.hashCode();
 		assertEquals(expectedHashCodeResult, cardSignUpResponseModel1.hashCode());
@@ -67,30 +67,30 @@ public class CardSignUpResponseModelTest {
 	@Test
 	public void testEquals5() {
 		CardSignUpResponseModel cardSignUpResponseModel = new CardSignUpResponseModel();
-		cardSignUpResponseModel.setCardId(null);
+		cardSignUpResponseModel.setId(null);
 
 		CardSignUpResponseModel cardSignUpResponseModel1 = new CardSignUpResponseModel();
-		cardSignUpResponseModel1.setCardId("42");
+		cardSignUpResponseModel1.setId("42");
 		assertFalse(cardSignUpResponseModel.equals(cardSignUpResponseModel1));
 	}
 
 	@Test
 	public void testEquals6() {
 		CardSignUpResponseModel cardSignUpResponseModel = new CardSignUpResponseModel();
-		cardSignUpResponseModel.setCardId("Card Id");
+		cardSignUpResponseModel.setId("Card Id");
 
 		CardSignUpResponseModel cardSignUpResponseModel1 = new CardSignUpResponseModel();
-		cardSignUpResponseModel1.setCardId("42");
+		cardSignUpResponseModel1.setId("42");
 		assertFalse(cardSignUpResponseModel.equals(cardSignUpResponseModel1));
 	}
 
 	@Test
 	public void testEquals7() {
 		CardSignUpResponseModel cardSignUpResponseModel = new CardSignUpResponseModel();
-		cardSignUpResponseModel.setCardId(null);
+		cardSignUpResponseModel.setId(null);
 
 		CardSignUpResponseModel cardSignUpResponseModel1 = new CardSignUpResponseModel();
-		cardSignUpResponseModel1.setCardId(null);
+		cardSignUpResponseModel1.setId(null);
 		assertTrue(cardSignUpResponseModel.equals(cardSignUpResponseModel1));
 		int expectedHashCodeResult = cardSignUpResponseModel.hashCode();
 		assertEquals(expectedHashCodeResult, cardSignUpResponseModel1.hashCode());
