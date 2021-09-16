@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.apache.commons.lang.math.NumberUtils.isNumber;
+import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
 
 /**
  * This class provides the implementation of the CardService interface.
@@ -66,7 +66,7 @@ public class CardServiceImpl implements CardService {
 		if (search == null) {
 			entities = cardRepo.findAll(page);
 		} else {
-			if (isNumber(search)) {
+			if (isCreatable(search)) {
 				String[] values = search.split(",");
 
 				CurrencyValue searchBalance;
@@ -134,7 +134,7 @@ public class CardServiceImpl implements CardService {
 		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardUpdateModel.getCardType());
 		Optional<UserEntity> user = userRepository.findById(cardUpdateModel.getUser());
 		Optional<CardEntity> card = cardRepo.findById(cardUpdateModel.getId());
-		if(card.isPresent()){
+		if (card.isPresent()) {
 			card.get().setId(cardUpdateModel.getId());
 			card.get().setUser(user.orElse(null));
 			card.get().setCardType(cardType.orElse(null));
@@ -251,30 +251,30 @@ public class CardServiceImpl implements CardService {
 
 		if (searchCriteria == null) {
 			Optional<UserEntity> user = userRepository.findById(userId);
-			if(user.isPresent()){
+			if (user.isPresent()) {
 				cards = cardRepo.findAllByUser(user.get(), page);
-				for(CardEntity card : cards){
+				for (CardEntity card : cards) {
 					System.out.println(card);
 				}
-			} else{
+			} else {
 				log.error("No user found to locate cards by user id");
 			}
 
-		} else if (isNumber(searchCriteria)) {
-				searchBalance = parseBalance(searchCriteria);
+		} else if (isCreatable(searchCriteria)) {
+			searchBalance = parseBalance(searchCriteria);
 
-				cards = cardRepo.findAllByUser_UserIdEqualsAndBalanceOrBillCycleLengthOrInterestRateEquals(userId,
-				searchBalance, Integer.parseInt(searchCriteria), Double.parseDouble(searchCriteria), page);
+			cards = cardRepo.findAllByUser_UserIdEqualsAndBalanceOrBillCycleLengthOrInterestRateEquals(userId,
+					searchBalance, Integer.parseInt(searchCriteria), Double.parseDouble(searchCriteria), page);
 
-			} else if (GenericValidator.isDate(searchCriteria, "yyyy-MM-dd", true)) {
-				LocalDateTime dateSearch = LocalDateTime.parse(searchCriteria);
-				cards = cardRepo.findAllByUser_UserIdEqualsAndCreateDateOrExpireDateEquals(userId, dateSearch, dateSearch,
-						page);
-			} else {
-				cards =
-						cardRepo.findAllByUser_UserIdEqualsAndIdOrNicknameOrCardType_TypeNameContainsIgnoreCase(userId,
-								searchCriteria, searchCriteria, searchCriteria, page);
-			}
+		} else if (GenericValidator.isDate(searchCriteria, "yyyy-MM-dd", true)) {
+			LocalDateTime dateSearch = LocalDateTime.parse(searchCriteria);
+			cards = cardRepo.findAllByUser_UserIdEqualsAndCreateDateOrExpireDateEquals(userId, dateSearch, dateSearch,
+					page);
+		} else {
+			cards =
+					cardRepo.findAllByUser_UserIdEqualsAndIdOrNicknameOrCardType_TypeNameContainsIgnoreCase(userId,
+							searchCriteria, searchCriteria, searchCriteria, page);
+		}
 
 		Page<CardDTO> returnValue = null;
 
@@ -300,7 +300,7 @@ public class CardServiceImpl implements CardService {
 		if (search == null) {
 			cardTypes = cardTypeRepo.findAllByIsAvailableTrue(page);
 		} else {
-			if (isNumber(search)) {
+			if (isCreatable(search)) {
 				cardTypes = cardTypeRepo.findAllByIsAvailableTrueAndBaseInterestRateIsLike(Double.valueOf(search),
 						page);
 			} else {
@@ -394,7 +394,7 @@ public class CardServiceImpl implements CardService {
 		if (values.length == 2) {
 			searchBalance = new CurrencyValue(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
 		} else {
-			if(Integer.parseInt(values[0]) > 99){
+			if (Integer.parseInt(values[0]) > 99) {
 				searchBalance = new CurrencyValue(Integer.parseInt(values[0]), 0);
 			} else {
 				searchBalance = new CurrencyValue(0, Integer.parseInt(values[0]));
