@@ -50,6 +50,13 @@ public class CardController {
 	 * @param cardRegistration		CardRegistrationModel		the data required to register the card
 	 * @return	CardSignUpResponseModel		the card service's response to the registration request
 	 */
+	
+	@GetMapping(path = "/health")
+        @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+        public ResponseEntity<String> healthCheck() {
+            return new ResponseEntity<>("Healthy", HttpStatus.OK);
+        }
+	
 	@PostMapping(path = "/register/{id}")
 	@PreAuthorize("hasAuthority('admin')")
 	@Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
