@@ -22,26 +22,27 @@ import javax.ws.rs.HttpMethod;
 @Slf4j
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private final Environment environment;
-	private final AuthorizationService authorizationService;
-	private final PasswordEncoder passwordEncoder;
+    private final Environment environment;
+    private final AuthorizationService authorizationService;
+    private final PasswordEncoder passwordEncoder;
 
-	public SecurityConfig(Environment environment, AuthorizationService authorizationService, PasswordEncoder passwordEncoder) {
-		this.environment = environment;
-		this.passwordEncoder = passwordEncoder;
-		this.authorizationService = authorizationService;
-	}
+    public SecurityConfig(Environment environment, AuthorizationService authorizationService, PasswordEncoder passwordEncoder) {
+        this.environment = environment;
+        this.passwordEncoder = passwordEncoder;
+        this.authorizationService = authorizationService;
+    }
 
-	@Description("Configure HTTP Security")
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable();
-		http.cors()
-				.and().authorizeRequests()
-				.antMatchers("/api/cards/*", HttpMethod.POST).permitAll()
-				.and().authorizeRequests().anyRequest().authenticated()
-				.and()
-				.addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
-		http.headers().frameOptions().disable();
-	}
+    @Description("Configure HTTP Security")
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+        http.cors()
+                .and().authorizeRequests()
+                .antMatchers("/api/cards/*", HttpMethod.POST).permitAll()
+                .antMatchers("/api/cards/health", HttpMethod.GET).permitAll()
+                .and().authorizeRequests().anyRequest().authenticated()
+                .and()
+                .addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
+        http.headers().frameOptions().disable();
+    }
 }
