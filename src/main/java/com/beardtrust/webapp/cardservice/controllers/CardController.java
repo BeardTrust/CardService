@@ -41,6 +41,14 @@ public class CardController {
     public CardController(CardService cardService) {
         this.cardService = cardService;
     }
+    
+    @PreAuthorize("permitAll()")
+    @GetMapping(path = "/health")
+    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<String> healthCheck() {
+        log.info("Health Check Incoming");
+        return new ResponseEntity<>("Healthy", HttpStatus.OK);
+    }
 
     /**
      * This method is used by administrators to register a card for a client of
@@ -53,14 +61,6 @@ public class CardController {
      * @return	CardSignUpResponseModel	the card service's response to the
      * registration request
      */
-    @PreAuthorize("permitAll()")
-    @GetMapping(path = "/health")
-    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<String> healthCheck() {
-        log.info("Health Check Incoming");
-        return new ResponseEntity<>("Healthy", HttpStatus.OK);
-    }
-
     @PostMapping(path = "/register/{id}")
     @PreAuthorize("hasAuthority('admin')")
     @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
