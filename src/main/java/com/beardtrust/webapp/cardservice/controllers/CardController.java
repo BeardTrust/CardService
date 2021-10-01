@@ -31,6 +31,7 @@ import java.util.List;
  * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
  */
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/cards")
 @Slf4j
 public class CardController {
