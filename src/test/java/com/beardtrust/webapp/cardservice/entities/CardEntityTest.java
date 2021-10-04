@@ -34,7 +34,7 @@ public class CardEntityTest {
 		user.setUserId("42");
 		actualCardEntity.setUser(user);
 		assertTrue(actualCardEntity.isActiveStatus());
-		assertEquals("10.00", actualCardEntity.getBalance().toString());
+		assertEquals("$10.00", actualCardEntity.getBalance().toString());
 		assertEquals(3, actualCardEntity.getBillCycleLength());
 		assertEquals("42", actualCardEntity.getId());
 		assertEquals("Card Number", actualCardEntity.getCardNumber());
