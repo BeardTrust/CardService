@@ -13,14 +13,48 @@ import org.springframework.data.domain.Pageable;
 
 public interface CardService {
 
+	/**
+	 * This method returns a page of card DTOs.
+	 *
+	 * @param pageNumber int the page number
+	 * @param pageSize int the number of items on the page
+	 * @param sortBy String[] the sorting instructions
+	 * @param search String the search term
+	 * @return the requested page
+	 */
 	Page<CardDTO> getAll(int pageNumber, int pageSize, String[] sortBy, String search);
 
+	/**
+	 * This method returns a card entity by card id.
+	 *
+	 * @param id String the card UUID
+	 * @return the card entity of the requested card
+	 */
 	CardEntity getById(String id);
 
+	/**
+	 * This method deactivates a card by its card id.
+	 *
+	 * @param id String card id
+	 */
 	void deactivateById(String id);
 
+	/**
+	 * This method takes a CardUpdateModel object and updates a card as stored in the
+	 * database.
+	 *
+	 * @param cardUpdateModel the CardUpdateModel with the new card data
+	 */
 	void update(CardUpdateModel cardUpdateModel);
 
+	/**
+	 * This method takes a user's id and a CardRegistrationModel object and registers a
+	 * new card to the user.
+	 *
+	 * @param userId String the user's id
+	 * @param cardRegistration CardRegistrationModel containing the registration data
+	 * @return CardSignUpResponseModel representing the response to the registration request
+	 */
 	CardSignUpResponseModel registerCard(String userId, CardRegistrationModel cardRegistration);
 
 	/**
