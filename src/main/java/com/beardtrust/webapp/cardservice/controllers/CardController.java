@@ -9,6 +9,7 @@ import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
 import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import com.beardtrust.webapp.cardservice.services.CardService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,6 +32,7 @@ import java.util.List;
  * @author Davis Hill <Davis.Hill@Smoothstack.com>
  * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
  */
+@RequiredArgsConstructor
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/cards")
@@ -38,16 +41,18 @@ public class CardController {
 
     private final CardService cardService;
 
-    @Autowired
-    public CardController(CardService cardService) {
-        this.cardService = cardService;
-    }
-    
+    /**
+     * This method exposes an endpoint for health checks that returns the String "Healthy"
+     * and a status code of 200.
+     *
+     * @return ResponseEntity<String> representing the status of the service
+     */
     @PreAuthorize("permitAll()")
     @GetMapping(path = "/health")
-    @Consumes({MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<String> healthCheck() {
-        log.info("Health Check Incoming");
+        log.trace("Start of CardController.healthCheck()");
+        log.debug("Health Check Incoming");
+        log.trace("End of CardController.healthCheck()");
         return new ResponseEntity<>("Healthy", HttpStatus.OK);
     }
 
@@ -68,10 +73,14 @@ public class CardController {
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<CardSignUpResponseModel> registerCard(@PathVariable("id") String userId,
             @RequestBody CardRegistrationModel cardRegistration) {
-        ResponseEntity<CardSignUpResponseModel> response;
-        System.out.println(userId);
-        System.out.println("Signup Request: " + cardRegistration);
-        response = new ResponseEntity<>(cardService.registerCard(userId, cardRegistration), HttpStatus.CREATED);
+        log.trace("Start of CardController.registerCard(" + userId + ", <redacted CardRegistrationModel>)");
+
+        ResponseEntity<CardSignUpResponseModel> response = new ResponseEntity<>(
+                cardService.registerCard(userId, cardRegistration), HttpStatus.CREATED
+        );
+
+        log.trace("End of CardController.registerCard(" + userId + ", <redacted CardRegistrationModel>)");
+
         return response;
     }
 
@@ -82,31 +91,43 @@ public class CardController {
             @RequestParam(name = "sortBy",
                     defaultValue = "id,asc") String[] sortBy,
             @RequestParam(name = "search", required = false) String searchCriteria) {
-        ResponseEntity<Page<CardDTO>> response;
+        log.trace("Start of CardController.displayAllCards(" + pageNumber + ", " + pageSize + ", " + Arrays.toString(sortBy) + ", " + searchCriteria +
+                ")");        ResponseEntity<Page<CardDTO>> response;
 
         response = new ResponseEntity<>(cardService.getAll(pageNumber, pageSize, sortBy, searchCriteria),
                 HttpStatus.OK);
-
+        log.trace("End of CardController.displayAllCards(" + pageNumber + ", " + pageSize + ", " + Arrays.toString(sortBy) + ", " + searchCriteria +
+                ")");
         return response;
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('admin')")
     public CardEntity displayCardById(@PathVariable String id) {
+
+        log.trace("Start of CardController.displayCardById(" + id + ")");
+        log.trace("End of CardController.displayCardById(" + id + ")");
         return cardService.getById(id);
     }
 
     @PutMapping()
     @PreAuthorize("hasAuthority('admin')")
     public void updateCard(@RequestBody CardUpdateModel cardUpdateModel) {
-        System.out.println("updateCard");
+        log.trace("Start of CardController.updateCard(<redacted CardUpdateModel for " +
+                cardUpdateModel.getId() + ">)");
         cardService.update(cardUpdateModel);
+        log.trace("End of CardController.updateCard(<redacted CardUpdateModel for " +
+                cardUpdateModel.getId() + ">)");
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('admin')")
     public void deactivateCard(@PathVariable String id) {
+        log.trace("Start of CardController.deactivateCard(" + id + ")");
+
         cardService.deactivateById(id);
+
+        log.trace("End of CardController.deactivateCard(" + id + ")");
     }
 
     /**
@@ -126,9 +147,10 @@ public class CardController {
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<CardSignUpResponseModel> applyForCard(@PathVariable("id") String userId,
             @RequestBody CardSignUpRequestModel signUpRequest) {
+        log.trace("Start of CardController.applyForCard(<redacted CardSignUpRequestModel for " + userId + ")");
         ResponseEntity<CardSignUpResponseModel> response;
-        log.info("New card application for " + userId);
         response = new ResponseEntity<>(cardService.applyForCard(userId, signUpRequest), HttpStatus.CREATED);
+        log.trace("End of CardController.applyForCard(<redacted CardSignUpRequestModel for " + userId + ")");
         return response;
     }
 
@@ -146,10 +168,12 @@ public class CardController {
     @Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<CardDTO> getCardStatus(@PathVariable(value = "userId") String userId,
             @PathVariable(value = "cardId") String id) {
-        ResponseEntity<CardDTO> response;
-        log.info("Card status request for user " + userId + "'s card with id " + id);
+        log.trace("Start of CardController.getCardStatus(" + userId + ", " + id + ")");
+
         CardDTO status = cardService.getStatus(userId, id);
-        response = new ResponseEntity<>(status, HttpStatus.OK);
+        ResponseEntity<CardDTO> response = new ResponseEntity<>(status, HttpStatus.OK);
+
+        log.trace("End of CardController.getCardStatus(" + userId + ", " + id + ")");
         return response;
     }
 
@@ -170,11 +194,15 @@ public class CardController {
             @RequestParam(name = "sortBy",
                     defaultValue = "id,asc") String[] sortBy,
             @RequestParam(name = "search", required = false) String searchCriteria) {
+        log.trace("Start of CardController.getCardsByUser(" + userId + ", " + pageNumber + ", " + pageSize +
+                ", " + Arrays.toString(sortBy) + ", " + searchCriteria + ")");
         ResponseEntity<Page<CardDTO>> response;
         log.info("Card list requested for " + userId);
         Page<CardDTO> cards;
         cards = cardService.getCardsByUser(userId, pageNumber, pageSize, sortBy, searchCriteria);
         response = new ResponseEntity<>(cards, HttpStatus.OK);
+        log.trace("End of CardController.getCardsByUser(" + userId + ", " + pageNumber + ", " + pageSize +
+                ", " + Arrays.toString(sortBy) + ", " + searchCriteria + ")");
         return response;
     }
 
@@ -193,9 +221,14 @@ public class CardController {
             @RequestParam(name = "sortBy",
                     defaultValue = "id,desc") String[] sortBy,
             @RequestParam(name = "search", required = false) String searchCriteria) {
+        log.trace("Start of CardController.getAvailableCardTypes(" + pageNumber + ", " + pageSize +
+                ", " + Arrays.toString(sortBy) + ", " + searchCriteria + ")");
+
         Page<CardTypeDTO> page = cardService.getAvailableCardTypes(pageNumber, pageSize, sortBy, searchCriteria);
 
-        log.info("Request received to view all available cards");
+        log.trace("End of CardController.getAvailableCardTypes(" + pageNumber + ", " + pageSize +
+                ", " + Arrays.toString(sortBy) + ", " + searchCriteria + ")");
+
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
 }
