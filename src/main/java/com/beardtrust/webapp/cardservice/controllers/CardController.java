@@ -3,7 +3,9 @@ package com.beardtrust.webapp.cardservice.controllers;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
+import com.beardtrust.webapp.cardservice.dtos.FinancialTransactionDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
+import com.beardtrust.webapp.cardservice.entities.CardTransaction;
 import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
 import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
@@ -13,6 +15,7 @@ import com.beardtrust.webapp.cardservice.services.CardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -179,5 +182,22 @@ public class CardController {
 
 		log.info("Request received to view all available cards");
 		return new ResponseEntity<>(page, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasAuthority('admin') or principal == #userId")
+	@GetMapping(path = "/{id}/{cardId}/transactions")
+	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	public ResponseEntity<Page<FinancialTransactionDTO>> getCardTransactions(@PathVariable(name = "id")String userId,
+																			 @PathVariable(name = "cardId")String cardId,
+																			 Pageable page){
+		log.trace("Start of CardController.getCardTransactions()");
+
+		ResponseEntity<Page<FinancialTransactionDTO>> results = null;
+
+		results = new ResponseEntity<>(cardService.getCardTransactions(cardId, page), HttpStatus.OK);
+
+		log.trace("End of CardController.getCardTransactions()");
+
+		return results;
 	}
 }

@@ -2,6 +2,7 @@ package com.beardtrust.webapp.cardservice.services;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
+import com.beardtrust.webapp.cardservice.dtos.FinancialTransactionDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
 import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
@@ -11,8 +12,10 @@ import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
 import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import com.beardtrust.webapp.cardservice.repos.CardRepository;
+import com.beardtrust.webapp.cardservice.repos.CardTransactionRepository;
 import com.beardtrust.webapp.cardservice.repos.CardTypeRepository;
 import com.beardtrust.webapp.cardservice.repos.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.GenericValidator;
 import org.modelmapper.ModelMapper;
@@ -37,18 +40,13 @@ import static org.apache.commons.lang.math.NumberUtils.isNumber;
  * @author Davis Hill <Davis.Hill@Smoothstack.com>
  */
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class CardServiceImpl implements CardService {
 	private final CardRepository cardRepo;
 	private final CardTypeRepository cardTypeRepo;
 	private final UserRepository userRepository;
-
-	@Autowired
-	public CardServiceImpl(CardRepository cardRepo, CardTypeRepository cardTypeRepo, UserRepository userRepository) {
-		this.cardRepo = cardRepo;
-		this.cardTypeRepo = cardTypeRepo;
-		this.userRepository = userRepository;
-	}
+	private final CardTransactionRepository cardTransactionRepository;
 
 	@Override
 	@Transactional
@@ -320,6 +318,32 @@ public class CardServiceImpl implements CardService {
 		} else {
 			log.error("No available card types found");
 		}
+
+		return results;
+	}
+
+	@Override
+	public Page<FinancialTransactionDTO> getCardTransactions(String cardId, Pageable page) {
+		log.trace("Start of CardService.getCardTransactions()");
+
+		Page<FinancialTransactionDTO> results = null;
+
+		try{
+			results = cardTransactionRepository.findAllBySource_IdOrTarget_IdIs(cardId, cardId, page).map(cardTransaction -> FinancialTransactionDTO.builder()
+					.id(cardTransaction.getTransactionId())
+					.amount(cardTransaction.getTransactionAmount())
+					.transactionStatus(cardTransaction.getTransactionStatus())
+					.source(cardTransaction.getSource())
+					.target(cardTransaction.getTarget())
+					.transactionType(cardTransaction.getTransactionType())
+					.notes(cardTransaction.getNotes())
+					.build());
+		} catch(Exception e) {
+			log.debug(e.getMessage());
+		}
+
+
+		log.trace("End of CardService.getCardTransactions()");
 
 		return results;
 	}

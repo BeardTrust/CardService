@@ -2,6 +2,7 @@ package com.beardtrust.webapp.cardservice.services;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
+import com.beardtrust.webapp.cardservice.dtos.FinancialTransactionDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
 import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
@@ -9,6 +10,7 @@ import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
 import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 
 public interface CardService {
@@ -68,4 +70,6 @@ public interface CardService {
 	 * @return List<CardTypeDTO> list of all available card types
 	 */
 	Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy, String search);
+
+	Page<FinancialTransactionDTO> getCardTransactions(String cardId, Pageable page);
 }
