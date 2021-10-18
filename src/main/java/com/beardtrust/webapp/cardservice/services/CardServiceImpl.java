@@ -330,7 +330,7 @@ public class CardServiceImpl implements CardService {
 
 		try{
 			results = cardTransactionRepository.findAllBySource_IdOrTarget_IdIs(cardId, cardId, page).map(cardTransaction -> FinancialTransactionDTO.builder()
-					.id(cardTransaction.getTransactionId())
+					.id(cardTransaction.getId())
 					.amount(cardTransaction.getTransactionAmount())
 					.transactionStatus(cardTransaction.getTransactionStatus())
 					.source(cardTransaction.getSource())

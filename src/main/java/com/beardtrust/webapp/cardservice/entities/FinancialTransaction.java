@@ -6,27 +6,32 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * This is the abstract base class for all transaction classes.  It contains
- * a UUID-based transactionId, a
+ * This is the abstract base class for all transaction classes.
  *
  * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
  */
+@Table(name = "FinancialTransactions", indexes = {
+		@Index(name = "idx_financialtransaction", columnList = "type_id")
+})
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class FinancialTransaction implements Comparable<FinancialTransaction>, Serializable {
 	private static final long serialVersionUID = 7424732886566449898L;
-
-	@Id
-	private String transactionId;
-	@ManyToOne
-	private TransactionType transactionType;
 	@Embedded
 	CurrencyValue transactionAmount;
 	@ManyToOne
+	@JoinColumn(name = "status_id")
 	TransactionStatus transactionStatus;
+	@Id
+	private String id;
+	@JoinColumn(name = "type_id")
 	@ManyToOne
+	private TransactionType transactionType;
+	@ManyToOne
+	@JoinColumn(name = "source_id")
 	private FinancialAsset source;
 	@ManyToOne
+	@JoinColumn(name = "target_id")
 	private FinancialAsset target;
 	private LocalDateTime statusTime;
 	private String notes;
@@ -36,8 +41,8 @@ public abstract class FinancialTransaction implements Comparable<FinancialTransa
 	 *
 	 * @return the transaction id
 	 */
-	public String getTransactionId() {
-		return transactionId;
+	public String getId() {
+		return id;
 	}
 
 	/**
@@ -45,8 +50,8 @@ public abstract class FinancialTransaction implements Comparable<FinancialTransa
 	 *
 	 * @param transactionId the transaction id
 	 */
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
+	public void setId(String transactionId) {
+		this.id = transactionId;
 	}
 
 	/**
@@ -180,18 +185,18 @@ public abstract class FinancialTransaction implements Comparable<FinancialTransa
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		FinancialTransaction that = (FinancialTransaction) o;
-		return Objects.equals(transactionId, that.transactionId) && Objects.equals(transactionType, that.transactionType) && Objects.equals(transactionAmount, that.transactionAmount) && Objects.equals(transactionStatus, that.transactionStatus) && Objects.equals(source, that.source) && Objects.equals(target, that.target) && Objects.equals(statusTime, that.statusTime) && Objects.equals(notes, that.notes);
+		return Objects.equals(id, that.id) && Objects.equals(transactionType, that.transactionType) && Objects.equals(transactionAmount, that.transactionAmount) && Objects.equals(transactionStatus, that.transactionStatus) && Objects.equals(source, that.source) && Objects.equals(target, that.target) && Objects.equals(statusTime, that.statusTime) && Objects.equals(notes, that.notes);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(transactionId, transactionType, transactionAmount, transactionStatus, source, target, statusTime, notes);
+		return Objects.hash(id, transactionType, transactionAmount, transactionStatus, source, target, statusTime, notes);
 	}
 
 	@Override
 	public String toString() {
 		return "FinancialTransaction{" +
-				"transactionId='" + transactionId + '\'' +
+				"transactionId='" + id + '\'' +
 				", transactionType=" + transactionType +
 				", transactionAmount=" + transactionAmount +
 				", transactionStatus=" + transactionStatus +

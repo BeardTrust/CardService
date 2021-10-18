@@ -38,8 +38,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().disable();
 		http.cors()
 				.and().authorizeRequests()
-				.antMatchers("/cards/*/*/transactions", HttpMethod.GET).permitAll()
-				.antMatchers("/api/cards/*", HttpMethod.POST).permitAll()
 				.and().authorizeRequests().anyRequest().authenticated()
 				.and()
 				.addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
