@@ -34,4 +34,6 @@ token:
   expiration: 864000000
 logging:
   level:
-    web: Debug
+    root: Trace
+    web: Trace
+    com.beardtrust.webapp: Trace
