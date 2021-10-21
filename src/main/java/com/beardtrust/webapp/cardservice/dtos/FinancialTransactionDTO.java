@@ -6,6 +6,8 @@ import com.beardtrust.webapp.cardservice.entities.TransactionStatus;
 import com.beardtrust.webapp.cardservice.entities.TransactionType;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 /**
  * This is the Data Transfer Object for Financial Transactions.
  *
@@ -17,10 +19,11 @@ import lombok.*;
 @Builder
 public class FinancialTransactionDTO {
 	private String id;
-	private CurrencyValue amount;
+	private CurrencyValue transactionAmount;
 	private TransactionStatus transactionStatus;
 	private FinancialAsset source;
 	private FinancialAsset target;
 	private TransactionType transactionType;
 	private String notes;
+	private LocalDateTime statusTime;
 }

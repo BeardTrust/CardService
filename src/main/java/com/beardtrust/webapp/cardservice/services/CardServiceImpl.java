@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static org.apache.commons.lang.math.NumberUtils.isNumber;
@@ -323,27 +324,93 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	public Page<FinancialTransactionDTO> getCardTransactions(String cardId, Pageable page) {
+	public Page<FinancialTransactionDTO> getCardTransactions(String cardId, String search, Pageable page) {
 		log.trace("Start of CardService.getCardTransactions()");
 
 		Page<FinancialTransactionDTO> results = null;
 
-		try{
+		if(search == null){
+			log.debug("Search criteria is null");
 			results = cardTransactionRepository.findAllBySource_IdOrTarget_IdIs(cardId, cardId, page).map(cardTransaction -> FinancialTransactionDTO.builder()
 					.id(cardTransaction.getId())
-					.amount(cardTransaction.getTransactionAmount())
+					.transactionAmount(cardTransaction.getTransactionAmount())
 					.transactionStatus(cardTransaction.getTransactionStatus())
 					.source(cardTransaction.getSource())
 					.target(cardTransaction.getTarget())
 					.transactionType(cardTransaction.getTransactionType())
 					.notes(cardTransaction.getNotes())
+					.statusTime(cardTransaction.getStatusTime())
 					.build());
-		} catch(Exception e) {
-			log.debug(e.getMessage());
+		} else {
+			if(isNumber(search)){
+				log.debug("Search criteria is a number");
+				CurrencyValue searchAmount = parseBalance(search);
+
+				results =
+						cardTransactionRepository.findBySource_IdAndTransactionAmountOrTarget_IdAndTransactionAmount(
+								cardId, searchAmount, cardId, searchAmount, page)
+								.map(cardTransaction -> FinancialTransactionDTO.builder()
+										.id(cardTransaction.getId())
+										.transactionAmount(cardTransaction.getTransactionAmount())
+										.transactionStatus(cardTransaction.getTransactionStatus())
+										.source(cardTransaction.getSource())
+										.target(cardTransaction.getTarget())
+										.transactionType(cardTransaction.getTransactionType())
+										.notes(cardTransaction.getNotes())
+										.statusTime(cardTransaction.getStatusTime())
+										.build());
+			} else if (GenericValidator.isDate(search, "yyyy-MM-dd", true)){
+				log.debug("Search criteria is a date");
+				LocalDateTime startTime = LocalDateTime.parse(search);
+				LocalDateTime endTime = LocalDateTime.parse(search).plusHours(23).plusMinutes(59);
+				results = cardTransactionRepository
+						.findBySource_IdAndStatusTimeBetweenOrTarget_IdAndStatusTimeBetween(cardId, startTime,
+								endTime, cardId, startTime, endTime, page)
+						.map(cardTransaction -> FinancialTransactionDTO.builder()
+						.id(cardTransaction.getId())
+						.transactionAmount(cardTransaction.getTransactionAmount())
+						.transactionStatus(cardTransaction.getTransactionStatus())
+						.source(cardTransaction.getSource())
+						.target(cardTransaction.getTarget())
+						.transactionType(cardTransaction.getTransactionType())
+						.notes(cardTransaction.getNotes())
+						.statusTime(cardTransaction.getStatusTime())
+						.build());
+			} else {
+				log.debug("Search criteria is a string");
+				results = cardTransactionRepository
+						.findBySource_IdAndTransactionStatus_StatusNameOrSource_IdAndNotesOrTarget_IdAndTransactionStatus_StatusNameOrTarget_IdAndNotes(
+								cardId, search, cardId, search, cardId, search, cardId, search, page
+						).map(cardTransaction -> FinancialTransactionDTO.builder()
+								.id(cardTransaction.getId())
+								.transactionAmount(cardTransaction.getTransactionAmount())
+								.transactionStatus(cardTransaction.getTransactionStatus())
+								.source(cardTransaction.getSource())
+								.target(cardTransaction.getTarget())
+								.transactionType(cardTransaction.getTransactionType())
+								.notes(cardTransaction.getNotes())
+								.statusTime(cardTransaction.getStatusTime())
+								.build());
+			}
+
 		}
-
-
 		log.trace("End of CardService.getCardTransactions()");
+
+		return results;
+	}
+
+	public Page<FinancialTransactionDTO> getAllCardTransactions(Pageable page){
+		Page<FinancialTransactionDTO> results = null;
+		results = cardTransactionRepository.findAll(page).map(transaction -> FinancialTransactionDTO.builder()
+				.id(transaction.getId())
+				.transactionAmount(transaction.getTransactionAmount())
+				.transactionStatus(transaction.getTransactionStatus())
+				.transactionType(transaction.getTransactionType())
+				.source(transaction.getSource())
+				.target(transaction.getTarget())
+				.notes(transaction.getNotes())
+				.statusTime(transaction.getStatusTime())
+				.build());
 
 		return results;
 	}
@@ -418,10 +485,15 @@ public class CardServiceImpl implements CardService {
 		if (values.length == 2) {
 			searchBalance = new CurrencyValue(Integer.parseInt(values[0]), Integer.parseInt(values[1]));
 		} else {
-			if(Integer.parseInt(values[0]) > 99){
-				searchBalance = new CurrencyValue(Integer.parseInt(values[0]), 0);
+			values = searchCriteria.split("\\.");
+			if(values.length == 2){
+				searchBalance = CurrencyValue.valueOf(Double.parseDouble(searchCriteria));
 			} else {
-				searchBalance = new CurrencyValue(0, Integer.parseInt(values[0]));
+				if(Integer.parseInt(values[0]) > 99){
+					searchBalance = new CurrencyValue(Integer.parseInt(values[0]), 0);
+				} else {
+					searchBalance = new CurrencyValue(0, Integer.parseInt(values[0]));
+				}
 			}
 		}
 

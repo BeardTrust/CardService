@@ -2,10 +2,7 @@ package com.beardtrust.webapp.cardservice.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.Objects;
 import java.util.Set;
 
@@ -15,6 +12,7 @@ import java.util.Set;
  * @author Matthew Crowell <Matthew.Crowell@Smoothstack.com>
  */
 @Entity
+@Table(name = "transaction_statuses")
 public class TransactionStatus {
 	@Id
 	private int statusId;

@@ -1,12 +1,13 @@
 package com.beardtrust.webapp.cardservice.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -17,12 +18,12 @@ import java.util.UUID;
 @Entity
 @Table(name = "users")
 public class UserEntity implements Serializable {
-	private static final long serialVersionUID = -8426134977411636998L;
 	@Id
 	@Column(name = "user_id", unique = true)
 	private String userId;
 	@Column(unique = true)
 	private String username;
+	@JsonBackReference
 	private String password;
 	@Column(unique = true)
 	private String email;
@@ -35,7 +36,7 @@ public class UserEntity implements Serializable {
 	private String role;
 	@JsonIgnore
 	@OneToMany(mappedBy = "user")
-	private List<CardEntity> cards;
+	private Set<FinancialAsset> assets;
 
 	/**
 	 * Instantiates a new UserEntity.
