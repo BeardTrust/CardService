@@ -10,8 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import javax.ws.rs.HttpMethod;
-
 /**
  * The application's security configuration class.
  *
@@ -38,6 +36,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().disable();
 		http.cors()
 				.and().authorizeRequests()
+				.antMatchers("/api/swagger-ui/**")
+				.hasAuthority("admin")
 				.and().authorizeRequests().anyRequest().authenticated()
 				.and()
 				.addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));

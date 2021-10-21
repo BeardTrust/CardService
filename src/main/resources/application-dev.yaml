@@ -34,6 +34,8 @@ token:
   expiration: 864000000
 logging:
   level:
-    root: Trace
-    web: Trace
-    com.beardtrust.webapp: Trace
+    root: ${ROOT_LOG_LEVEL:Debug}
+    web: ${WEB_LOG_LEVEL:Debug}
+    com.beardtrust.webapp: ${BT_LOG_LEVEL:Debug}
+  file:
+    name: ${LOG_FILE:logs/CardService.log}
