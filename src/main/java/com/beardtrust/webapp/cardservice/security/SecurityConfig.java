@@ -35,10 +35,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable();
 		http.cors()
-				.and().authorizeRequests()
-				.antMatchers("/api/swagger-ui/**")
-				.hasAuthority("admin")
-				.and().authorizeRequests().anyRequest().authenticated()
+				.and()
+				.authorizeRequests()
+				.antMatchers("/api/swagger-ui/**").permitAll()
+				.and()
+				.authorizeRequests().anyRequest().authenticated()
 				.and()
 				.addFilter(new AuthorizationFilter(authenticationManager(), environment, authorizationService));
 		http.headers().frameOptions().disable();
