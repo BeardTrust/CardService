@@ -4,7 +4,10 @@ import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
 import com.beardtrust.webapp.cardservice.entities.FinancialAsset;
 import com.beardtrust.webapp.cardservice.entities.TransactionStatus;
 import com.beardtrust.webapp.cardservice.entities.TransactionType;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -14,16 +17,16 @@ import java.time.LocalDateTime;
  * @author Matthew.Crowell@Smoothstack.com
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class FinancialTransactionDTO {
-	private String id;
-	private CurrencyValue transactionAmount;
-	private TransactionStatus transactionStatus;
-	private FinancialAsset source;
-	private FinancialAsset target;
-	private TransactionType transactionType;
-	private String notes;
-	private LocalDateTime statusTime;
+	String id;
+	CurrencyValue transactionAmount;
+	TransactionStatus transactionStatus;
+	FinancialAsset source;
+	FinancialAsset target;
+	TransactionType transactionType;
+	String notes;
+	LocalDateTime statusTime;
 }

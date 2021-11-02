@@ -11,10 +11,7 @@ import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
 import com.beardtrust.webapp.cardservice.models.CardUpdateModel;
-import com.beardtrust.webapp.cardservice.repos.CardRepository;
-import com.beardtrust.webapp.cardservice.repos.CardTransactionRepository;
-import com.beardtrust.webapp.cardservice.repos.CardTypeRepository;
-import com.beardtrust.webapp.cardservice.repos.UserRepository;
+import com.beardtrust.webapp.cardservice.repos.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.GenericValidator;
@@ -43,14 +40,13 @@ import static org.apache.commons.lang.math.NumberUtils.isNumber;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class CardServiceImpl implements CardService {
 	private final CardRepository cardRepo;
 	private final CardTypeRepository cardTypeRepo;
 	private final UserRepository userRepository;
-	private final CardTransactionRepository cardTransactionRepository;
 
 	@Override
-	@Transactional
 	public Page<CardDTO> getAll(int pageNumber, int pageSize, String[] sortBy, String search) {
 		List<Sort.Order> orders = parseOrders(sortBy);
 
@@ -97,7 +93,6 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	@Transactional
 	public CardEntity getById(String id) {
 
 		Optional<CardEntity> result = cardRepo.findById(id);
@@ -114,7 +109,6 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	@Transactional
 	public void deactivateById(String id) {
 
 		Optional<CardEntity> result = cardRepo.findById(id);
@@ -128,7 +122,6 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	@Transactional
 	public void update(CardUpdateModel cardUpdateModel) {
 		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardUpdateModel.getCardType());
 		Optional<UserEntity> user = userRepository.findById(cardUpdateModel.getUser());
@@ -155,7 +148,6 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	@Transactional
 	public CardSignUpResponseModel registerCard(String userId, CardRegistrationModel cardRegistration) {
 		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(cardRegistration.getCardType());
 		CardEntity card = new CardEntity();
@@ -182,7 +174,6 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	@Transactional
 	public CardSignUpResponseModel applyForCard(String userId, CardSignUpRequestModel signUpRequest) {
 		Optional<CardTypeEntity> cardType = cardTypeRepo.findById(signUpRequest.getCardType());
 		CardEntity card = new CardEntity();
@@ -220,7 +211,6 @@ public class CardServiceImpl implements CardService {
 	}
 
 	@Override
-	@Transactional
 	public CardDTO getStatus(String userId, String id) {
 		log.info("Card status report for card with id: " + id);
 		CardDTO status = null;
@@ -319,98 +309,6 @@ public class CardServiceImpl implements CardService {
 		} else {
 			log.error("No available card types found");
 		}
-
-		return results;
-	}
-
-	@Override
-	public Page<FinancialTransactionDTO> getCardTransactions(String cardId, String search, Pageable page) {
-		log.trace("Start of CardService.getCardTransactions()");
-
-		Page<FinancialTransactionDTO> results = null;
-
-		if(search == null){
-			log.debug("Search criteria is null");
-			results = cardTransactionRepository.findAllBySource_IdOrTarget_IdIs(cardId, cardId, page).map(cardTransaction -> FinancialTransactionDTO.builder()
-					.id(cardTransaction.getId())
-					.transactionAmount(cardTransaction.getTransactionAmount())
-					.transactionStatus(cardTransaction.getTransactionStatus())
-					.source(cardTransaction.getSource())
-					.target(cardTransaction.getTarget())
-					.transactionType(cardTransaction.getTransactionType())
-					.notes(cardTransaction.getNotes())
-					.statusTime(cardTransaction.getStatusTime())
-					.build());
-		} else {
-			if(isNumber(search)){
-				log.debug("Search criteria is a number");
-				CurrencyValue searchAmount = parseBalance(search);
-
-				results =
-						cardTransactionRepository.findBySource_IdAndTransactionAmountOrTarget_IdAndTransactionAmount(
-								cardId, searchAmount, cardId, searchAmount, page)
-								.map(cardTransaction -> FinancialTransactionDTO.builder()
-										.id(cardTransaction.getId())
-										.transactionAmount(cardTransaction.getTransactionAmount())
-										.transactionStatus(cardTransaction.getTransactionStatus())
-										.source(cardTransaction.getSource())
-										.target(cardTransaction.getTarget())
-										.transactionType(cardTransaction.getTransactionType())
-										.notes(cardTransaction.getNotes())
-										.statusTime(cardTransaction.getStatusTime())
-										.build());
-			} else if (GenericValidator.isDate(search, "yyyy-MM-dd", true)){
-				log.debug("Search criteria is a date");
-				LocalDateTime startTime = LocalDateTime.parse(search);
-				LocalDateTime endTime = LocalDateTime.parse(search).plusHours(23).plusMinutes(59);
-				results = cardTransactionRepository
-						.findBySource_IdAndStatusTimeBetweenOrTarget_IdAndStatusTimeBetween(cardId, startTime,
-								endTime, cardId, startTime, endTime, page)
-						.map(cardTransaction -> FinancialTransactionDTO.builder()
-						.id(cardTransaction.getId())
-						.transactionAmount(cardTransaction.getTransactionAmount())
-						.transactionStatus(cardTransaction.getTransactionStatus())
-						.source(cardTransaction.getSource())
-						.target(cardTransaction.getTarget())
-						.transactionType(cardTransaction.getTransactionType())
-						.notes(cardTransaction.getNotes())
-						.statusTime(cardTransaction.getStatusTime())
-						.build());
-			} else {
-				log.debug("Search criteria is a string");
-				results = cardTransactionRepository
-						.findBySource_IdAndTransactionStatus_StatusNameOrSource_IdAndNotesOrTarget_IdAndTransactionStatus_StatusNameOrTarget_IdAndNotes(
-								cardId, search, cardId, search, cardId, search, cardId, search, page
-						).map(cardTransaction -> FinancialTransactionDTO.builder()
-								.id(cardTransaction.getId())
-								.transactionAmount(cardTransaction.getTransactionAmount())
-								.transactionStatus(cardTransaction.getTransactionStatus())
-								.source(cardTransaction.getSource())
-								.target(cardTransaction.getTarget())
-								.transactionType(cardTransaction.getTransactionType())
-								.notes(cardTransaction.getNotes())
-								.statusTime(cardTransaction.getStatusTime())
-								.build());
-			}
-
-		}
-		log.trace("End of CardService.getCardTransactions()");
-
-		return results;
-	}
-
-	public Page<FinancialTransactionDTO> getAllCardTransactions(Pageable page){
-		Page<FinancialTransactionDTO> results = null;
-		results = cardTransactionRepository.findAll(page).map(transaction -> FinancialTransactionDTO.builder()
-				.id(transaction.getId())
-				.transactionAmount(transaction.getTransactionAmount())
-				.transactionStatus(transaction.getTransactionStatus())
-				.transactionType(transaction.getTransactionType())
-				.source(transaction.getSource())
-				.target(transaction.getTarget())
-				.notes(transaction.getNotes())
-				.statusTime(transaction.getStatusTime())
-				.build());
 
 		return results;
 	}

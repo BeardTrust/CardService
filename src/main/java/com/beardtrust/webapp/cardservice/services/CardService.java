@@ -70,8 +70,4 @@ public interface CardService {
 	 * @return List<CardTypeDTO> list of all available card types
 	 */
 	Page<CardTypeDTO> getAvailableCardTypes(int pageNumber, int pageSize, String[] sortBy, String search);
-
-	Page<FinancialTransactionDTO> getCardTransactions(String cardId, String search, Pageable page);
-
-	Page<FinancialTransactionDTO> getAllCardTransactions(Pageable page);
 }

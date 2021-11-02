@@ -10,6 +10,7 @@ import com.beardtrust.webapp.cardservice.entities.CardTypeEntity;
 import com.beardtrust.webapp.cardservice.repos.CardTypeRepository;
 
 @Service
+@Transactional
 public class CardTypeServiceImpl implements CardTypeService {
 	
 	CardTypeRepository cardTypeRepo;
@@ -20,13 +21,11 @@ public class CardTypeServiceImpl implements CardTypeService {
 	}
 	
 	@Override
-	@Transactional
 	public void save(CardTypeEntity cardType) {
 		cardTypeRepo.save(cardType);
 		}
 	
 	@Override
-	@Transactional
 	public List<CardTypeEntity> getAll(){
 		return cardTypeRepo.findAll();
 	}
