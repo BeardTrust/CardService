@@ -183,38 +183,4 @@ public class CardController {
 		log.info("Request received to view all available cards");
 		return new ResponseEntity<>(page, HttpStatus.OK);
 	}
-
-
-	@PreAuthorize("hasAuthority('admin') or principal == #userId")
-	@GetMapping(path = "/{id}/{cardId}/transactions")
-	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<Page<FinancialTransactionDTO>> getCardTransactions(@PathVariable(name = "id")String userId,
-																			 @PathVariable(name = "cardId")String cardId,
-																			 @RequestParam(name = "search", required = false)String search,
-																			 Pageable page){
-		log.trace("Start of CardController.getCardTransactions()");
-
-		ResponseEntity<Page<FinancialTransactionDTO>> results = null;
-
-		results = new ResponseEntity<>(cardService.getCardTransactions(cardId, search, page), HttpStatus.OK);
-
-		log.trace("End of CardController.getCardTransactions()");
-
-		return results;
-	}
-
-	@PreAuthorize("hasAuthority('admin')")
-	@GetMapping(path = "/transactions/all")
-	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<Page<FinancialTransactionDTO>> getAllCardTransactions(Pageable page){
-		log.trace("Start of CardController.getAllCardTransactions()");
-
-		ResponseEntity<Page<FinancialTransactionDTO>> results = null;
-
-		results = new ResponseEntity<>(cardService.getAllCardTransactions(page), HttpStatus.OK);
-
-		log.trace("End of CardController.getAllCardTransactions()");
-
-		return results;
-	}
 }
