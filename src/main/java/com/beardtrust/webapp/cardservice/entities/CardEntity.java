@@ -20,12 +20,22 @@ public class CardEntity extends FinancialAsset {
 	private double interestRate;
 	@ManyToOne
 	private CardTypeEntity cardType;
+	@OneToOne
+	private PaymentEntity payment;
 	private LocalDateTime expireDate;
 	private int billCycleLength;
 	private String cardNumber;
 
 	public CardEntity() {
 		super();
+	}
+
+	public PaymentEntity getPayment() {
+		return payment;
+	}
+
+	public void setPayment(PaymentEntity payment) {
+		this.payment = payment;
 	}
 
 	public String getNickname() {
