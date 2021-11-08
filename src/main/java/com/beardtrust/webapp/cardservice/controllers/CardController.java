@@ -3,10 +3,7 @@ package com.beardtrust.webapp.cardservice.controllers;
 
 import com.beardtrust.webapp.cardservice.dtos.CardDTO;
 import com.beardtrust.webapp.cardservice.dtos.CardTypeDTO;
-import com.beardtrust.webapp.cardservice.dtos.FinancialTransactionDTO;
 import com.beardtrust.webapp.cardservice.entities.CardEntity;
-import com.beardtrust.webapp.cardservice.entities.CardTransaction;
-import com.beardtrust.webapp.cardservice.entities.CurrencyValue;
 import com.beardtrust.webapp.cardservice.models.CardRegistrationModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpRequestModel;
 import com.beardtrust.webapp.cardservice.models.CardSignUpResponseModel;
@@ -15,18 +12,14 @@ import com.beardtrust.webapp.cardservice.services.CardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class provides the rest api endpoints and associated logic.
@@ -49,9 +42,9 @@ public class CardController {
 	/**
 	 * This method is used by administrators to register a card for a client of BeardTrust.
 	 *
-	 * @param userId	String		the string representation of the user's unique user id
-	 * @param cardRegistration		CardRegistrationModel		the data required to register the card
-	 * @return	CardSignUpResponseModel		the card service's response to the registration request
+	 * @param userId           String		the string representation of the user's unique user id
+	 * @param cardRegistration CardRegistrationModel		the data required to register the card
+	 * @return CardSignUpResponseModel        the card service's response to the registration request
 	 */
 	@PostMapping(path = "/register/{id}")
 	@PreAuthorize("hasAuthority('admin')")
@@ -126,7 +119,7 @@ public class CardController {
 	 * user id from the database.
 	 *
 	 * @param userId String the user id that must be associated with the card
-	 * @param id String the card id to search for
+	 * @param id     String the card id to search for
 	 * @return ResponseEntity<CardDTO> the http response entity with the card details
 	 */
 	@PreAuthorize("hasAuthority('admin') or principal == #userId")
@@ -182,39 +175,5 @@ public class CardController {
 
 		log.info("Request received to view all available cards");
 		return new ResponseEntity<>(page, HttpStatus.OK);
-	}
-
-
-	@PreAuthorize("hasAuthority('admin') or principal == #userId")
-	@GetMapping(path = "/{id}/{cardId}/transactions")
-	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<Page<FinancialTransactionDTO>> getCardTransactions(@PathVariable(name = "id")String userId,
-																			 @PathVariable(name = "cardId")String cardId,
-																			 @RequestParam(name = "search", required = false)String search,
-																			 Pageable page){
-		log.trace("Start of CardController.getCardTransactions()");
-
-		ResponseEntity<Page<FinancialTransactionDTO>> results = null;
-
-		results = new ResponseEntity<>(cardService.getCardTransactions(cardId, search, page), HttpStatus.OK);
-
-		log.trace("End of CardController.getCardTransactions()");
-
-		return results;
-	}
-
-	@PreAuthorize("hasAuthority('admin')")
-	@GetMapping(path = "/transactions/all")
-	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<Page<FinancialTransactionDTO>> getAllCardTransactions(Pageable page){
-		log.trace("Start of CardController.getAllCardTransactions()");
-
-		ResponseEntity<Page<FinancialTransactionDTO>> results = null;
-
-		results = new ResponseEntity<>(cardService.getAllCardTransactions(page), HttpStatus.OK);
-
-		log.trace("End of CardController.getAllCardTransactions()");
-
-		return results;
 	}
 }
