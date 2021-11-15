@@ -1,6 +1,9 @@
 package com.beardtrust.webapp.cardservice.entities;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -23,6 +26,8 @@ public class CardEntity extends FinancialAsset {
 	private LocalDateTime expireDate;
 	private int billCycleLength;
 	private String cardNumber;
+	@OneToOne
+	private PaymentEntity payment;
 
 	public CardEntity() {
 		super();
@@ -76,21 +81,37 @@ public class CardEntity extends FinancialAsset {
 		this.cardNumber = cardNumber;
 	}
 
+	public PaymentEntity getPayment() {
+		return payment;
+	}
+
+	public void setPayment(PaymentEntity payment) {
+		this.payment = payment;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		CardEntity that = (CardEntity) o;
-		return Double.compare(that.interestRate, interestRate) == 0 && billCycleLength == that.billCycleLength && Objects.equals(nickname, that.nickname) && Objects.equals(cardType, that.cardType) && Objects.equals(expireDate, that.expireDate) && Objects.equals(cardNumber, that.cardNumber);
+		return Double.compare(that.getInterestRate(), getInterestRate()) == 0 && getBillCycleLength() == that.getBillCycleLength() && Objects.equals(getNickname(), that.getNickname()) && Objects.equals(getCardType(), that.getCardType()) && Objects.equals(getExpireDate(), that.getExpireDate()) && Objects.equals(getCardNumber(), that.getCardNumber()) && Objects.equals(getPayment(), that.getPayment());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(nickname, interestRate, cardType, expireDate, billCycleLength, cardNumber);
+		return Objects.hash(getNickname(), getInterestRate(), getCardType(), getExpireDate(), getBillCycleLength(), getCardNumber(), getPayment());
 	}
 
 	@Override
 	public String toString() {
-		return this.cardNumber;
+		return "CardEntity{" +
+				"nickname='" + nickname + '\'' +
+				", interestRate=" + interestRate +
+				", cardType=" + cardType +
+				", expireDate=" + expireDate +
+				", billCycleLength=" + billCycleLength +
+				", cardNumber='" + cardNumber + '\'' +
+				", payment=" + payment +
+				'}';
 	}
 }
